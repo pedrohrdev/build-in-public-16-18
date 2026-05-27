@@ -7,5 +7,5 @@ What do I already know? (May 14, 2026)
 
 -- Using TypeScript in my projects,
 -- Using Node to create APIs,
--- Using React to build the front-end,
+-- Using React with Next to build the front-end,
 -- Using PostgreSQL
