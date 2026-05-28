@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Study Plan — 6 Months to Fluency</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #00ff9d;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --danger: #ff4d6d;
+    --month1: #00ff9d;
+    --month2: #00d4ff;
+    --month3: #a78bfa;
+    --month4: #f59e0b;
+    --month5: #f97316;
+    --month6: #ff4d6d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 40px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,157,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,157,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridPulse 8s ease-in-out infinite;
+  }
+
+  @keyframes gridPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,255,157,0.08) 0%, transparent 70%);
+    top: -200px;
+    right: -100px;
+    pointer-events: none;
+  }
+
+  .hero-glow2 {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%);
+    bottom: -100px;
+    left: -100px;
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 900px; }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid rgba(0,255,157,0.3);
+    padding: 6px 14px;
+    border-radius: 2px;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+    animation: fadeInUp 0.6s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(48px, 8vw, 96px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    animation: fadeInUp 0.6s ease 0.1s both;
+  }
+
+  .hero-title .line2 {
+    -webkit-text-stroke: 1px var(--accent);
+    color: transparent;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 500px;
+    line-height: 1.8;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.6s ease 0.2s both;
+  }
+
+  /* DAILY ROUTINE */
+  .routine-bar {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 48px;
+    animation: fadeInUp 0.6s ease 0.3s both;
+  }
+
+  .routine-item {
+    flex: 1;
+    padding: 16px 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .routine-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    transition: opacity 0.3s;
+  }
+
+  .routine-item:nth-child(1)::before { background: var(--accent); }
+  .routine-item:nth-child(2)::before { background: var(--month2); }
+  .routine-item:nth-child(3)::before { background: var(--month3); }
+  .routine-item:nth-child(4)::before { background: var(--month6); }
+
+  .routine-item:hover { background: #16161f; transform: translateY(-2px); }
+
+  .routine-time {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .routine-item:nth-child(2) .routine-time { color: var(--month2); }
+  .routine-item:nth-child(3) .routine-time { color: var(--month3); }
+  .routine-item:nth-child(4) .routine-time { color: var(--month6); }
+
+  .routine-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* PROGRESS NAV */
+  .progress-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .progress-nav::-webkit-scrollbar { display: none; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .nav-item:hover { color: var(--text); }
+  .nav-item.active { color: var(--text); }
+
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* SECTIONS */
+  .section { padding: 80px 40px; border-bottom: 1px solid var(--border); position: relative; }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    margin-bottom: 60px;
+  }
+
+  .month-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 120px;
+    font-weight: 800;
+    line-height: 1;
+    opacity: 0.06;
+    position: absolute;
+    right: 40px;
+    top: 40px;
+    pointer-events: none;
+    letter-spacing: -0.05em;
+  }
+
+  .section-meta { flex: 1; }
+
+  .phase-label {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+
+  .section-goal {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  /* CARDS GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: relative;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .card:hover {
+    border-color: rgba(255,255,255,0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .card-icon {
+    font-size: 24px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+
+  .card-list {
+    list-style: none;
+  }
+
+  .card-list li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.5;
+  }
+
+  .card-list li:last-child { border-bottom: none; }
+
+  .card-list li::before {
+    content: '→';
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .card-highlight {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border-left: 2px solid currentColor;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+
+  /* TARGET BADGE */
+  .target-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid currentColor;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+
+  /* EXAMPLE BOX */
+  .example-box {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-left: 3px solid currentColor;
+    padding: 16px 20px;
+    margin-top: 12px;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .example-box .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .example-box .phrase {
+    font-style: italic;
+    opacity: 0.9;
+  }
+
+  /* TOOLS SECTION */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .tool-chip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .tool-chip:hover {
+    border-color: var(--accent);
+    background: rgba(0,255,157,0.03);
+  }
+
+  .tool-emoji { font-size: 20px; }
+
+  .tool-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .tool-desc { font-size: 10px; color: var(--muted); }
+
+  /* TRUTH SECTION */
+  .truth-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .truth-item {
+    padding: 32px;
+    background: var(--surface);
+    position: relative;
+  }
+
+  .truth-item.no {
+    border-left: 3px solid var(--danger);
+  }
+
+  .truth-item.yes {
+    border-left: 3px solid var(--accent);
+  }
+
+  .truth-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .truth-label.no-label { color: var(--danger); }
+  .truth-label.yes-label { color: var(--accent); }
+
+  .truth-list {
+    list-style: none;
+  }
+
+  .truth-list li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .truth-list li .marker {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .no .marker { color: var(--danger); }
+  .yes .marker { color: var(--accent); }
+
+  /* EXPECTATIONS */
+  .expectations-row {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+  }
+
+  .exp-item {
+    flex: 1;
+    min-width: 180px;
+    padding: 28px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s;
+  }
+
+  .exp-item:hover { border-color: var(--accent); }
+
+  .exp-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .exp-text { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* ACCELERATOR */
+  .accel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .accel-item {
+    padding: 24px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .accel-item::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,255,157,0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .accel-item:hover::after { opacity: 1; }
+  .accel-item:hover { border-color: rgba(0,255,157,0.3); transform: scale(1.02); }
+
+  .accel-emoji { font-size: 28px; margin-bottom: 12px; display: block; }
+  .accel-text { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* FOOTER */
+  .footer {
+    padding: 60px 40px;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(20px, 4vw, 40px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  .footer-text .accent { color: var(--accent); }
+
+  .footer-sub { font-size: 12px; color: var(--muted); }
+
+  /* KEYFRAMES */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* MONTH COLORS */
+  .m1 { --color: var(--month1); }
+  .m2 { --color: var(--month2); }
+  .m3 { --color: var(--month3); }
+  .m4 { --color: var(--month4); }
+  .m5 { --color: var(--month5); }
+  .m6 { --color: var(--month6); }
+
+  .section .card::before { background: var(--color); }
+  .section .phase-label { background: rgba(255,255,255,0.04); color: var(--color); border: 1px solid currentColor; }
+  .section .section-title { color: var(--color); }
+  .section .card-title { color: var(--color); }
+  .section .card-list li::before { color: var(--color); }
+  .section .card-highlight { color: var(--color); }
+  .section .target-badge { color: var(--color); }
+  .section .example-box { color: var(--color); }
+  .section .nav-dot { background: var(--color); }
+
+  /* WIDE CARD */
+  .card.wide { grid-column: 1 / -1; }
+
+  /* INLINE HIGHLIGHT */
+  .hl { color: var(--accent); font-weight: 500; }
+  .hl2 { color: var(--month3); }
+  .hl3 { color: var(--month4); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  @media (max-width: 768px) {
+    .hero { padding: 60px 24px; }
+    .section { padding: 60px 24px; }
+    .progress-nav { padding: 0 24px; }
+    .routine-bar { flex-wrap: wrap; }
+    .routine-item { flex: 1 1 40%; }
+    .truth-grid { grid-template-columns: 1fr; }
+    .section-header { flex-direction: column; gap: 20px; }
+    .month-number { font-size: 80px; }
+    .footer { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-content">
+    <span class="hero-tag">// 6-month plan · Mon → Fri</span>
+    <h1 class="hero-title">
+      English<br>
+      <span class="line2">Study Plan</span>
+    </h1>
+    <p class="hero-subtitle">
+      Um plano sério, direto ao ponto. Nada de teoria gigante.<br>
+      Só o que funciona. Todos os dias. Sem inventar moda.
+    </p>
+
+    <!-- DAILY ROUTINE -->
+    <div class="routine-bar">
+      <div class="routine-item">
+        <span class="routine-time">15 min</span>
+        <span class="routine-label">Vocabulário + Revisão</span>
+      </div>
+      <div class="routine-item">
+        <span class="routine-time">15 min</span>
+        <span class="routine-label">Gramática Prática</span>
+      </div>
+      <div class="routine-item">
+        <span class="routine-time">20 min</span>
+        <span class="routine-label">Listening</span>
+      </div>
+      <div class="routine-item">
+        <span class="routine-time">10 min</span>
+        <span class="routine-label">Speaking</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NAV -->
+<nav class="progress-nav">
+  <a href="#month1" class="nav-item m1"><span class="nav-dot" style="background:var(--month1)"></span>Mês 1</a>
+  <a href="#month2" class="nav-item m2"><span class="nav-dot" style="background:var(--month2)"></span>Mês 2</a>
+  <a href="#month3" class="nav-item m3"><span class="nav-dot" style="background:var(--month3)"></span>Mês 3</a>
+  <a href="#month4" class="nav-item m4"><span class="nav-dot" style="background:var(--month4)"></span>Mês 4</a>
+  <a href="#month5" class="nav-item m5"><span class="nav-dot" style="background:var(--month5)"></span>Mês 5</a>
+  <a href="#month6" class="nav-item m6"><span class="nav-dot" style="background:var(--month6)"></span>Mês 6</a>
+  <a href="#tools" class="nav-item"><span class="nav-dot" style="background:var(--muted)"></span>Ferramentas</a>
+  <a href="#truth" class="nav-item"><span class="nav-dot" style="background:var(--muted)"></span>A Verdade</a>
+</nav>
+
+<!-- MONTH 1 -->
+<section class="section m1" id="month1">
+  <div class="month-number">01</div>
+  <div class="section-header">
+    <div class="section-meta">
+      <span class="phase-label">FASE 1</span>
+      <h2 class="section-title">Sobrevivência<br>& Básico</h2>
+      <p class="section-goal">Entender inglês básico · Formar frases simples · Aprender sobrevivência</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <span class="card-icon">📚</span>
+      <div class="card-title">Vocabulário</div>
+      <div class="target-badge">🎯 Meta: 500 palavras</div>
+      <ul class="card-list">
+        <li>Números e datas</li>
+        <li>Tempo e clima</li>
+        <li>Verbos básicos</li>
+        <li>Rotina diária</li>
+        <li>Objetos comuns</li>
+        <li>Perguntas básicas</li>
+      </ul>
+      <div class="card-highlight">10 palavras novas/dia + revisar antigas no Anki</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🔤</span>
+      <div class="card-title">Gramática</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Somente isso no mês 1:</p>
+      <ul class="card-list">
+        <li>Verb to be</li>
+        <li>Present simple</li>
+        <li>Pronomes</li>
+        <li>Perguntas</li>
+        <li>Negativas</li>
+        <li>There is / There are</li>
+        <li>Preposições básicas</li>
+      </ul>
+      <div class="card-highlight">Nada além disso no primeiro mês.</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🎧</span>
+      <div class="card-title">Listening</div>
+      <ul class="card-list">
+        <li>Vídeos "English for beginners"</li>
+        <li>Canais lentos</li>
+        <li>Legenda em INGLÊS (nunca PT)</li>
+      </ul>
+      <div class="card-highlight">Você NÃO vai entender tudo. Tudo bem. Continue.</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🗣️</span>
+      <div class="card-title">Speaking</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Desde a semana 1:</p>
+      <ul class="card-list">
+        <li>Repetir frases em voz alta</li>
+        <li>Shadowing</li>
+        <li>Diário falado: grave 1 min por dia descrevendo o que fez</li>
+      </ul>
+      <div class="example-box">
+        <span class="label">// exemplo de shadowing</span>
+        <span class="phrase">"I work with programming."</span><br>
+        <span style="font-size:10px;color:var(--muted);margin-top:6px;display:block">Repita 20x. Parece bobo. É absurdo de eficiente.</span>
+      </div>
+      <div class="example-box" style="margin-top:12px;">
+        <span class="label">// diário falado — exemplo</span>
+        <span class="phrase">"Today I studied arrays. I fixed a bug in my code. It was hard but I understood."</span><br>
+        <span style="font-size:10px;color:var(--muted);margin-top:6px;display:block">Grave no celular. Não precisa ser perfeito. O objetivo é produzir, não só imitar.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MONTH 2 -->
+<section class="section m2" id="month2">
+  <div class="month-number">02</div>
+  <div class="section-header">
+    <div class="section-meta">
+      <span class="phase-label">FASE 2</span>
+      <h2 class="section-title">Conversas<br>Simples</h2>
+      <p class="section-goal">Começar conversas simples · Entender frases comuns · Ganhar velocidade</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <span class="card-icon">📚</span>
+      <div class="card-title">Vocabulário</div>
+      <div class="target-badge">🎯 Meta: 1000 palavras</div>
+      <ul class="card-list">
+        <li>Verbos comuns</li>
+        <li>Emoções</li>
+        <li>Rotina</li>
+        <li>Internet</li>
+        <li>Computador</li>
+        <li>Tech básica</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🔤</span>
+      <div class="card-title">Gramática</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Adicionar ao mês 1:</p>
+      <ul class="card-list">
+        <li>Past simple</li>
+        <li>Future</li>
+        <li>Modal verbs</li>
+        <li>Comparativos</li>
+        <li>Frequência</li>
+      </ul>
+      <div class="card-highlight">Ainda sem gramática avançada.</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🎧</span>
+      <div class="card-title">Listening</div>
+      <ul class="card-list">
+        <li>Vídeos normais porém simples</li>
+        <li>Canais tech fáceis</li>
+        <li>Programação em inglês</li>
+        <li>Setups · React · Node</li>
+      </ul>
+      <div class="card-highlight">Mesmo entendendo apenas 20%. Não pare.</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🗣️</span>
+      <div class="card-title">Speaking</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Responder perguntas simples:</p>
+      <div class="example-box">
+        <span class="label">// exemplo</span>
+        <span class="phrase">"What do you do?"</span><br>
+        <span class="phrase" style="margin-top:6px;display:block">"I study programming. I like backend development."</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MONTH 3 -->
+<section class="section m3" id="month3">
+  <div class="month-number">03</div>
+  <div class="section-header">
+    <div class="section-meta">
+      <span class="phase-label">FASE 3</span>
+      <h2 class="section-title">Inglês Tech<br>Começa</h2>
+      <p class="section-goal">Começar a "pensar" em inglês · Entender contexto · Iniciar inglês tech sério</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <span class="card-icon">💻</span>
+      <div class="card-title">Vocabulário Tech</div>
+      <div class="target-badge">🎯 +300 palavras tech</div>
+      <ul class="card-list">
+        <li>backend / frontend</li>
+        <li>database / deploy</li>
+        <li>API / authentication</li>
+        <li>bug / feature / commit</li>
+        <li>repository / framework</li>
+        <li>server / cloud</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🎧</span>
+      <div class="card-title">Listening</div>
+      <ul class="card-list">
+        <li>Vídeos de programação reais</li>
+        <li>Tutoriais Node/React em inglês</li>
+      </ul>
+      <div class="card-highlight">Você NÃO precisa entender tudo. Precisa acostumar o ouvido.</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🗣️</span>
+      <div class="card-title">Speaking</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Explicar código simples em inglês:</p>
+      <div class="example-box">
+        <span class="label">// exemplo</span>
+        <span class="phrase">"This API receives user data and stores it in PostgreSQL."</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">✍️</span>
+      <div class="card-title">Writing — Começa Agora</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">3 frases por dia descrevendo o que você codou:</p>
+      <div class="example-box">
+        <span class="label">// exemplo</span>
+        <span class="phrase">"Today I created a login route. It validates the user email and returns a token. I used bcrypt to hash the password."</span>
+      </div>
+      <div class="card-highlight">Simples. Sem pressão. O hábito de escrever em inglês começa aqui.</div>
+    </div>
+  </div>
+</section>
+
+<!-- MONTH 4 -->
+<section class="section m4" id="month4">
+  <div class="month-number">04</div>
+  <div class="section-header">
+    <div class="section-meta">
+      <span class="phase-label">FASE 4</span>
+      <h2 class="section-title">Inglês Tech<br>Funcional</h2>
+      <p class="section-goal">Inglês funcional tech · Agora começa o salto real.</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <span class="card-icon">📚</span>
+      <div class="card-title">Vocabulário</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Foco em ambiente de trabalho:</p>
+      <ul class="card-list">
+        <li>Reuniões e trabalho</li>
+        <li>GitHub / pull request</li>
+        <li>Architecture / debugging</li>
+        <li>Deadlines</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">✍️</span>
+      <div class="card-title">Writing</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Começar a escrever em inglês:</p>
+      <ul class="card-list">
+        <li>Commits em inglês</li>
+        <li>README em inglês</li>
+        <li>Comentários em inglês</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🗣️</span>
+      <div class="card-title">Speaking</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Treinar: explicar projetos</p>
+      <div class="example-box">
+        <span class="label">// exemplo</span>
+        <span class="phrase">"I built a backend API using Node.js and PostgreSQL."</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🎧</span>
+      <div class="card-title">Listening</div>
+      <ul class="card-list">
+        <li>Vídeos normais de dev</li>
+        <li>Podcasts lentos de tech</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🌐</span>
+      <div class="card-title">Conversação Real</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Chegou a hora de falar com pessoas reais:</p>
+      <ul class="card-list">
+        <li>Tandem ou HelloTalk — parceiros de idioma gratuito</li>
+        <li>iTalki — tutor barato para 1 sessão/semana</li>
+        <li>Reddit (r/cscareerquestions) — praticar escrita em contexto real</li>
+      </ul>
+      <div class="card-highlight">Falar sozinho ajuda. Falar com alguém é um salto diferente. Não pule essa etapa.</div>
+    </div>
+  </div>
+</section>
+
+<!-- MONTH 5 -->
+<section class="section m5" id="month5">
+  <div class="month-number">05</div>
+  <div class="section-header">
+    <div class="section-meta">
+      <span class="phase-label">FASE 5</span>
+      <h2 class="section-title">Ambiente<br>Real</h2>
+      <p class="section-goal">Ambiente real de trabalho · Parar de traduzir mentalmente · Consumir muito conteúdo tech</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card wide">
+      <span class="card-icon">⚡</span>
+      <div class="card-title">Treino Importante — Todo Dia</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Explique algo técnico por 5 minutos. Mesmo errado. Sem parar.</p>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:16px;">⏱ A partir do mês 5, aumente speaking para 20–25 min/dia e reduza gramática para 5 min. Você já tem a base — agora é volume de fala.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="example-box" style="flex:1;min-width:180px;">
+          <span class="label">// tema 1</span>
+          <span class="phrase">Autenticação JWT</span>
+        </div>
+        <div class="example-box" style="flex:1;min-width:180px;">
+          <span class="label">// tema 2</span>
+          <span class="phrase">React hooks</span>
+        </div>
+        <div class="example-box" style="flex:1;min-width:180px;">
+          <span class="label">// tema 3</span>
+          <span class="phrase">APIs REST</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">📖</span>
+      <div class="card-title">Leitura</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">Documentação real:</p>
+      <ul class="card-list">
+        <li>Node.js docs</li>
+        <li>React docs</li>
+        <li>PostgreSQL docs</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🧠</span>
+      <div class="card-title">Modo Mental</div>
+      <ul class="card-list">
+        <li>Parar de traduzir mentalmente</li>
+        <li>Conversar sozinho em inglês</li>
+        <li>Descrever o que faz</li>
+        <li>Consumir MUITO conteúdo tech</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- MONTH 6 -->
+<section class="section m6" id="month6">
+  <div class="month-number">06</div>
+  <div class="section-header">
+    <div class="section-meta">
+      <span class="phase-label">FASE 6</span>
+      <h2 class="section-title">Preparação<br>EUA</h2>
+      <p class="section-goal">Entrevistas · Comunicação · Confiança · Entendimento rápido</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <span class="card-icon">🎤</span>
+      <div class="card-title">Perguntas de Entrevista</div>
+      <ul class="card-list">
+        <li>Tell me about yourself</li>
+        <li>What projects have you built?</li>
+        <li>What technologies do you use?</li>
+        <li>Why backend?</li>
+        <li>Explain this project</li>
+      </ul>
+      <div class="example-box" style="margin-top:12px;">
+        <span class="label">// roteiro — tell me about yourself</span>
+        <span class="phrase">"I'm a backend developer from Brazil. I work with Node.js and PostgreSQL. I've built REST APIs and I'm comfortable with Git and deployment. I'm looking for a remote role where I can grow and contribute to a real product."</span>
+        <span style="font-size:10px;color:var(--muted);margin-top:8px;display:block">Adapte com seus dados. Treine até sair natural.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">💬</span>
+      <div class="card-title">Frases de Reunião</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">As mais usadas no dia a dia remoto:</p>
+      <ul class="card-list">
+        <li>"Can you repeat that, please?"</li>
+        <li>"Let me check and get back to you."</li>
+        <li>"I'll look into it."</li>
+        <li>"Can you share your screen?"</li>
+        <li>"I'm working on that, should be done by [day]."</li>
+        <li>"I have a question about the ticket."</li>
+        <li>"Sorry, I didn't catch that."</li>
+      </ul>
+      <div class="card-highlight">Essas frases aparecem em toda reunião. Decore. Sério.</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🔴</span>
+      <div class="card-title">Simulação Real</div>
+      <ul class="card-list">
+        <li>Assistir vídeos SEM legenda</li>
+        <li>Pensar em inglês</li>
+        <li>Escrever em inglês</li>
+        <li>Consumir tech em inglês diariamente</li>
+      </ul>
+      <div class="card-highlight">Você chegou até aqui. Agora é sobre confiança.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section class="section" id="tools">
+  <div class="section-header">
+    <div class="section-meta">
+      <span class="phase-label" style="color:var(--text);border-color:var(--border)">ARSENAL</span>
+      <h2 class="section-title" style="color:var(--text)">Ferramentas</h2>
+      <p class="section-goal">As ferramentas que fazem diferença de verdade</p>
+    </div>
+  </div>
+
+  <div class="tools-grid">
+    <div class="tool-chip">
+      <span class="tool-emoji">🃏</span>
+      <div>
+        <span class="tool-name">Anki</span>
+        <span class="tool-desc">Vocabulário + revisão</span>
+      </div>
+    </div>
+    <div class="tool-chip">
+      <span class="tool-emoji">📖</span>
+      <div>
+        <span class="tool-name">Cambridge Dictionary</span>
+        <span class="tool-desc">Definições precisas</span>
+      </div>
+    </div>
+    <div class="tool-chip">
+      <span class="tool-emoji">🔊</span>
+      <div>
+        <span class="tool-name">YouGlish</span>
+        <span class="tool-desc">Pronúncia real em contexto</span>
+      </div>
+    </div>
+    <div class="tool-chip">
+      <span class="tool-emoji">📡</span>
+      <div>
+        <span class="tool-name">BBC Learning English</span>
+        <span class="tool-desc">Listening estruturado</span>
+      </div>
+    </div>
+    <div class="tool-chip">
+      <span class="tool-emoji">📻</span>
+      <div>
+        <span class="tool-name">VOA Learning English</span>
+        <span class="tool-desc">Listening fácil/médio</span>
+      </div>
+    </div>
+    <div class="tool-chip">
+      <span class="tool-emoji">🎓</span>
+      <div>
+        <span class="tool-name">freeCodeCamp</span>
+        <span class="tool-desc">Inglês tech real</span>
+      </div>
+    </div>
+    <div class="tool-chip">
+      <span class="tool-emoji">▶️</span>
+      <div>
+        <span class="tool-name">Traversy Media</span>
+        <span class="tool-desc">Tutoriais em inglês</span>
+      </div>
+    </div>
+    <div class="tool-chip">
+      <span class="tool-emoji">⌨️</span>
+      <div>
+        <span class="tool-name">The Primeagen</span>
+        <span class="tool-desc">Inglês dev avançado</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUTH -->
+<section class="section" id="truth">
+  <div class="section-header">
+    <div class="section-meta">
+      <span class="phase-label" style="color:var(--text);border-color:var(--border)">REALIDADE</span>
+      <h2 class="section-title" style="color:var(--text)">A Verdade<br>Sobre Fluência</h2>
+      <p class="section-goal">O que realmente importa — e o que não importa</p>
+    </div>
+  </div>
+
+  <div class="truth-grid">
+    <div class="truth-item no">
+      <div class="truth-label no-label">❌ Você NÃO precisa de</div>
+      <ul class="truth-list">
+        <li><span class="marker">×</span>Sotaque perfeito</li>
+        <li><span class="marker">×</span>Gramática perfeita</li>
+        <li><span class="marker">×</span>Falar igual americano</li>
+      </ul>
+    </div>
+    <div class="truth-item yes">
+      <div class="truth-label yes-label">✓ Você precisa de</div>
+      <ul class="truth-list">
+        <li><span class="marker">✓</span>Entender</li>
+        <li><span class="marker">✓</span>Responder</li>
+        <li><span class="marker">✓</span>Explicar código</li>
+        <li><span class="marker">✓</span>Participar de reunião</li>
+        <li><span class="marker">✓</span>Ler documentação</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ACCELERATOR -->
+  <h3 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin:48px 0 20px;letter-spacing:0.05em;text-transform:uppercase;color:var(--accent)">⚡ O Maior Acelerador</h3>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:24px;">Transforme sua vida tech em inglês. Isso sozinho acelera MUITO.</p>
+
+  <div class="accel-grid">
+    <div class="accel-item">
+      <span class="accel-emoji">💻</span>
+      <span class="accel-text">VSCode em inglês</span>
+    </div>
+    <div class="accel-item">
+      <span class="accel-emoji">🐙</span>
+      <span class="accel-text">GitHub em inglês</span>
+    </div>
+    <div class="accel-item">
+      <span class="accel-emoji">▶️</span>
+      <span class="accel-text">Vídeos em inglês</span>
+    </div>
+    <div class="accel-item">
+      <span class="accel-emoji">📄</span>
+      <span class="accel-text">Docs em inglês</span>
+    </div>
+    <div class="accel-item">
+      <span class="accel-emoji">💬</span>
+      <span class="accel-text">Comentários em inglês</span>
+    </div>
+  </div>
+
+  <!-- EXPECTATIONS -->
+  <h3 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin:48px 0 20px;letter-spacing:0.05em;text-transform:uppercase;color:var(--text)">📊 Expectativa Realista — 6 meses sérios</h3>
+
+  <div class="expectations-row">
+    <div class="exp-item">
+      <span class="exp-num">B1+</span>
+      <span class="exp-text">Nível geral forte ao final</span>
+    </div>
+    <div class="exp-item">
+      <span class="exp-num">B2</span>
+      <span class="exp-text">Reading/listening em tech</span>
+    </div>
+    <div class="exp-item" style="border-color:var(--accent)">
+      <span class="exp-num" style="font-size:22px">✓</span>
+      <span class="exp-text">Conversar sobre programação</span>
+    </div>
+    <div class="exp-item">
+      <span class="exp-num" style="font-size:22px">✓</span>
+      <span class="exp-text">Entender vídeos de dev</span>
+    </div>
+    <div class="exp-item">
+      <span class="exp-num" style="font-size:22px">✓</span>
+      <span class="exp-text">Ler documentação real</span>
+    </div>
+    <div class="exp-item">
+      <span class="exp-num" style="font-size:22px">✓</span>
+      <span class="exp-text">Fazer entrevistas simples</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p class="footer-text">
+    Simples. Repetível.<br>
+    <span class="accent">Sem inventar moda.</span>
+  </p>
+  <p class="footer-sub">60 min/dia · 5 dias/semana · 6 meses · Isso muda sua vida.</p>
+</footer>
+
+<script>
+  // Highlight nav on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(item => item.classList.remove('active'));
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Fade in cards on scroll
+  const cards = document.querySelectorAll('.card, .tool-chip, .accel-item, .exp-item');
+  const cardObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = `fadeInUp 0.5s ease ${i * 0.05}s both`;
+        cardObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  cards.forEach(c => cardObserver.observe(c));
+</script>
+</body>
+</html>
