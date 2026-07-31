@@ -13,9 +13,9 @@ Uso `[x]` pra concluído, `[ ]` pra pendente, e `🟡` pra "em andamento".
 ### Curso 1 - JavaScript: aprendendo a programar 🟡
 `Início: 29/07/2026`
 
-- [x] Aula 01 - Primeiros passos `29/07/2026 → 30/07/2026`
-- [🟡] Aula 02 - Algoritmos e pensamento computacional `30/07/2026`
-- [ ] Aula 03 - Configurando ambiente de desenvolvimento
+- [x] Aula 01 - Primeiros passos `29/07/2026 -> 30/07/2026`
+- [x] Aula 02 - Algoritmos e pensamento computacional `30/07/2026 -> 31/07/2026` 
+- [ ] Aula 03 - Configurando ambiente de desenvolvimento `31/07/2026`
 - [ ] Aula 04 - Variáveis e tipos de dados
 - [ ] Aula 05 - Operadores
 - [ ] Aula 06 - Condições e fluxos
