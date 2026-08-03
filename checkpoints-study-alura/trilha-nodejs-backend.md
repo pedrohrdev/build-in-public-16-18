@@ -16,9 +16,9 @@ Uso `[x]` pra concluído, `[ ]` pra pendente, e `🟡` pra "em andamento".
 - [x] Aula 01 - Primeiros passos `29/07/2026 -> 30/07/2026`
 - [x] Aula 02 - Algoritmos e pensamento computacional `30/07/2026 -> 31/07/2026` 
 - [x] Aula 03 - Configurando ambiente de desenvolvimento `31/07/2026 -> 31/07/2026`
-- [x] Aula 04 - Variáveis e tipos de dados
-- [🟡] Aula 05 - Operadores
-- [ ] Aula 06 - Condições e fluxos
+- [x] Aula 04 - Variáveis e tipos de dados `31/07/2026 -> 31/07/2026`
+- [x] Aula 05 - Operadores`31/07/2026 -> 02/08/2026`
+- [🟡] Aula 06 - Condições e fluxos `03/08/2026`
 - [ ] Aula 07 - Laços, operadores e decisão
 - [ ] Aula 08 - Funções
 - [ ] Aula 09 - Arrays
