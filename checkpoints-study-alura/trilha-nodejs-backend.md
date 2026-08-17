@@ -20,8 +20,8 @@ Uso `[x]` pra concluído, `[ ]` pra pendente, e `🟡` pra "em andamento".
 - [x] Aula 05 - Operadores`31/07/2026 -> 02/08/2026`
 - [x] Aula 06 - Condições e fluxos `03/08/2026 -> 03/08/2026`
 - [x] Aula 07 - Laços, operadores e decisão `03/08/2026 -> 05/08/2026`
-- [x] Aula 08 - Funções
-- [🟡] Aula 09 - Arrays
+- [x] Aula 08 - Funções `05/08/2026 -> 13/08/2026`
+- [🟡] Aula 09 - Arrays `14/08/2026 -> `
 - [ ] Aula 10 - Objetos
 - [ ] Aula 11 - Fundamentos modernos do JavaScript
  
