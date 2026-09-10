@@ -10,7 +10,7 @@ Uso `[x]` pra concluído, `[ ]` pra pendente, e `🟡` pra "em andamento".
 ## 📦 Base - Lógica de programação e JavaScript
 `Início: 29/07/2026` · 2 cursos · 28h
 
-### Curso 1 - JavaScript: aprendendo a programar 🟡
+### Curso 1 - JavaScript: aprendendo a programar - concluido
 `Início: 29/07/2026`
 
 - [x] Aula 01 - Primeiros passos `29/07/2026 -> 30/07/2026`
@@ -23,10 +23,16 @@ Uso `[x]` pra concluído, `[ ]` pra pendente, e `🟡` pra "em andamento".
 - [x] Aula 08 - Funções `05/08/2026 -> 13/08/2026`
 - [x] Aula 09 - Arrays `14/08/2026 -> 16/08/2026`
 - [x] Aula 10 - Objetos `16/08/2026 -> 24/08/2026`
-- [🟡] Aula 11 - Fundamentos modernos do JavaScript `24/08/2026 ->`
+- [x] Aula 11 - Fundamentos modernos do JavaScript `24/08/2026 -> 08/09/2026`
  
 ### Curso 2 - Git e GitHub: compartilhando e colaborando em projetos
-- [ ] (aulas ainda não iniciadas)
+`Início: 08/09/2026`
+
+- [x] Aula 01 - Compartilhando projetos `08/09/2026 -> 10/09/2026`
+- [🟡] Aula 02 - Colaborando em projetos `10/09/2026` 
+- [ ] Aula 03 - Utilizando Git na IDE
+- [ ] Aula 04 - Voltando no tempo
+- [ ] Aula 05 - Mais recursos
 
 ---
 
