@@ -29,8 +29,8 @@ Uso `[x]` pra concluído, `[ ]` pra pendente, e `🟡` pra "em andamento".
 `Início: 08/09/2026`
 
 - [x] Aula 01 - Compartilhando projetos `08/09/2026 -> 10/09/2026`
-- [🟡] Aula 02 - Colaborando em projetos `10/09/2026` 
-- [ ] Aula 03 - Utilizando Git na IDE
+- [x] Aula 02 - Colaborando em projetos `10/09/2026 -> 13/09/2026` 
+- [🟡] Aula 03 - Utilizando Git na IDE
 - [ ] Aula 04 - Voltando no tempo
 - [ ] Aula 05 - Mais recursos
 
