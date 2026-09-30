@@ -39,7 +39,107 @@ Uso `[x]` pra concluído, `[ ]` pra pendente, e `🟡` pra "em andamento".
 ---
 
 ## 📦 Nível 1 - Construindo APIs completas
-- [ ] (curso(s) ainda não iniciado(s))
+`Início: --/--/2026,  Término: --/--/2026`  · 25 cursos
+
+### Curso 1 - JavaScript com Node.js: criando sua primeira biblioteca - concluido
+`Início: 26/09/2026`
+`Término: 30/09/2026`
+
+### Curso 2 - Node.js: criando uma API Rest com Express e MongoDB
+`Início: 30/09/2026`
+`Término: --/--/2026`
+
+### Curso 3 - Node.js: lidando com buscas, filtros, paginação e erros em uma API
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 4 - DevOps: construindo e gerindo containers com o Docker
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 5 - ORM com Node.js: desenvolvendo uma API com Sequelize e SQLite
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 6 - ORM com Node.js: avançando nas funcionalidades do Sequelize
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 7 - Swagger: documentando APIs REST com OpenAPI
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 8 - Node.js: implementando testes em uma API
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 9 - Node.js: melhorando o fluxo de desenvolvimento e integração de sua equipe
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 10 - Cloud: realize o deploy de aplicações na AWS
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 11 - Node.js: criptografia e tokens JWT
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 12 - Node.js: criando API Rest com autenticação, perfis de usuários e permissões
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 13 - Node.js: Autenticação, Passport e OAuth 2.0
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 14 - WebSockets: implemente comunicações em tempo real com Socket.IO e MongoDB
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 15 - WebSockets: implemente autenticação e avance no Socket.IO
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 16 - JavaScript: programação Orientada a Objetos
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 17 - TypeScript: construção de uma API com tipagem segura
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 18 - SOLID com TypeScript: aplicando boas práticas em orientação a objetos
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 19 - TypeScript: desenvolvendo validações e tratando erros
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 20 - Padrões de projeto com TypeScript: aprimorando uma API com arquitetura limpa
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 21 - Desenvolvimento Seguro: lidando com erros e logs em uma aplicação
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 22 - Nest.js: Persistindo dados com TypeORM e PostgreSQL
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 23 - Nest.js: lidando com migrações, relacionamentos ORM e erros em uma API
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 24 - Nest.js: adicionando funcionalidades com Redis, JWT e logging
+`Início: --/--/2026`
+`Término: --/--/2026`
+
+### Curso 25 - Desenvolvimento Back-end com IA: Fundamentos Práticos
+`Início: --/--/2026`
+`Término: --/--/2026`
 
 ---
 
@@ -57,6 +157,6 @@ Uso `[x]` pra concluído, `[ ]` pra pendente, e `🟡` pra "em andamento".
 | Nível | Status | Progresso |
 |---|---|---|
 | Base | 🟡 Em andamento | 1/2 cursos |
-| Nível 1 | ⬜ Não iniciado | 0% |
+| Nível 1 | 🟡 Em andamento | 1/25 cursos |
 | Nível 2 | ⬜ Não iniciado | 0% |
 | Nível 3 | ⬜ Não iniciado | 0% |
