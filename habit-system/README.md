@@ -29,13 +29,22 @@ A barra no topo troca de aba (a aba fica no endereço, ex.: `/#mes`, então reca
     entra nos totais como “sem dia definido”.
 - **Ano**: números do ano, heatmap de todos os dias (com filtro por hábito), visão geral
   (acumulado, horas por mês, dias da semana) e os cards de mês a mês.
-- **Hábitos**: uma seção para Programação, Inglês e Leitura.
+- **Hábitos**: uma seção para Programação, Inglês e Leitura, e uma de **Commits** que busca sozinha
+  no GitHub (@pedrohrdev): total, sequência, commits por mês, heatmap, repositórios mais ativos,
+  horário em que você commita e commits recentes. O painel de cada dia também lista os commits daquele dia.
 - **Conquistas**, **Diário** (busca) e **Dados** (relatório de importação e resumos mensais).
 
 Clicar em um dia abre o dia por cima da página (← → navegam, Esc fecha).
 O botão **Registrar hoje** abre a gaveta de registro. Nada nunca é sobrescrito.
 
 Os endereços antigos `/dias`, `/novo` e `/relatorio` levam para a aba correspondente.
+
+## Atalho na área de trabalho
+
+`scripts/abrir.sh` sobe o servidor (com `GITHUB_TOKEN=$(gh auth token)`) se ele não estiver rodando
+e abre `http://localhost:3000` no Chrome. `scripts/abrir.sh --parar` desliga o servidor.
+O atalho "Hábitos 16→18" (área de trabalho e menu de aplicativos) chama esse script;
+clique direito nele → "Parar servidor". O log fica em `data/servidor.log`.
 
 ## Conferir a importação no terminal
 
@@ -53,3 +62,14 @@ npm run relatorio   # lista todos os dias extraídos e exporta tudo em data/expo
   (ex.: `september/10-10-2026.md`), usa a data do título.
 
 Para ler de outra pasta: `LOGS_ROOT=/caminho npm run dev`.
+
+## Commits do GitHub
+
+Os commits vêm da API de busca do GitHub e ficam em cache por 30 min (`data/github-cache.json`).
+Sem token só entram repositórios públicos. Para incluir os privados (e ter limite maior de buscas):
+
+```bash
+GITHUB_TOKEN=$(gh auth token) npm run dev
+```
+
+Outro usuário: `GITHUB_USER=nome npm run dev`.

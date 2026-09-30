@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { buildDashboard, computeExtras, type DayLite, type Report, type SummaryLite } from "@/lib/dashboard";
+import { CommitsSection, GithubProvider } from "./commits";
 import { OverlayProvider } from "./overlays";
 import { Achievements, Backstage, Fab, HABITS, HabitSection, Journal } from "./sections";
 import { MonthTab, TodayTab, YearTab } from "./tabs";
@@ -29,6 +30,7 @@ const SECTION_TAB: Record<string, TabId> = {
   programming: "habitos",
   english: "habitos",
   reading: "habitos",
+  commits: "habitos",
   bastidores: "dados",
 };
 
@@ -64,6 +66,7 @@ export default function DashboardView({
 }) {
   const extras = useMemo(() => computeExtras(days, summaries), [days, summaries]);
   const all = useMemo(() => buildDashboard(days, extras, today), [days, extras, today]);
+  const loggedDates = useMemo(() => new Set(days.map((d) => d.date)), [days]);
   const hash = useHash();
   const tab = tabOf(hash);
 
@@ -83,6 +86,7 @@ export default function DashboardView({
   });
 
   return (
+    <GithubProvider>
     <OverlayProvider days={all.days} today={today}>
       <ScrollProgress />
       <nav className="sticky top-0 z-40 border-b border-border bg-background/75 backdrop-blur-xl">
@@ -122,8 +126,14 @@ export default function DashboardView({
           {tab === "ano" && <YearTab days={days} extras={extras} today={today} />}
           {tab !== "hoje" && tab !== "mes" && tab !== "ano" && (
             <main className="mx-auto max-w-6xl px-4 md:px-8">
-              {tab === "habitos" &&
-                (Object.keys(HABITS) as (keyof typeof HABITS)[]).map((k) => <HabitSection key={k} k={k} stats={all.habits[k]} data={all} />)}
+              {tab === "habitos" && (
+                <>
+                  {(Object.keys(HABITS) as (keyof typeof HABITS)[]).map((k) => (
+                    <HabitSection key={k} k={k} stats={all.habits[k]} data={all} />
+                  ))}
+                  <CommitsSection today={today} loggedDates={loggedDates} />
+                </>
+              )}
               {tab === "conquistas" && <Achievements data={all} />}
               {tab === "diario" && <Journal data={all} />}
               {tab === "dados" && <Backstage data={all} report={report} summaries={summaries} />}
@@ -137,5 +147,6 @@ export default function DashboardView({
       </footer>
       <Fab logged={all.loggedToday} />
     </OverlayProvider>
+    </GithubProvider>
   );
 }

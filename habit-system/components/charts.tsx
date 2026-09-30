@@ -45,6 +45,8 @@ export function BarChart({
   const max = niceMax(Math.max(...totals), unit * 2);
   const ticks = [0, max / 2, max];
   const peak = totals.indexOf(Math.max(...totals));
+  // Pula rótulos do eixo quando não cabem (~30px por rótulo)
+  const every = Math.max(labelEvery, width ? Math.ceil((labels.length * 30) / Math.max(1, width - 40)) : 1);
 
   return (
     <div ref={ref} className="relative select-none" onPointerLeave={() => (setTip(null), setHover(null))}>
@@ -119,8 +121,8 @@ export function BarChart({
       </div>
       <div className="mt-2 ml-10 flex px-1" style={{ gap: `${gapPct}%` }}>
         {labels.map((l, i) => (
-          <span key={l} className="flex-1 overflow-visible text-center text-[11px] whitespace-nowrap text-muted">
-            {i % labelEvery === 0 ? l : ""}
+          <span key={l} className="flex min-w-0 flex-1 justify-center overflow-visible text-[11px] whitespace-nowrap text-muted">
+            {i % every === 0 ? l : ""}
           </span>
         ))}
       </div>

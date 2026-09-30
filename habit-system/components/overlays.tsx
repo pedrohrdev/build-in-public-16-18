@@ -5,6 +5,7 @@ import { createContext, useActionState, useContext, useEffect, useState, type Re
 import { createDay, type NewDayState } from "@/app/actions";
 import type { DayLite } from "@/lib/dashboard";
 import { brDate, formatDuration, longDate } from "@/lib/format";
+import { DayCommits } from "./commits";
 import { EASE } from "./ui";
 
 /* ------------------------------------------------------------ contexto */
@@ -156,6 +157,7 @@ function DayModal({
               {d.study && <Block label="Estudo">{d.study}</Block>}
               {d.learned && <Block label="O que aprendi">{d.learned}</Block>}
               {d.notes && <Block label="Notas">{d.notes}</Block>}
+              <DayCommits date={d.date} />
               {d.groupedWith.length > 0 && (
                 <p className="text-sm text-muted">Registrado no mesmo arquivo que {d.groupedWith.map(brDate).join(", ")}.</p>
               )}
