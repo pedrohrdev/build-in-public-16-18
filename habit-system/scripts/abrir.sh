@@ -2,11 +2,11 @@
 # Abre o painel de hábitos: sobe o servidor (se ainda não estiver rodando) e abre no Chrome.
 #   abrir.sh          -> abre
 #   abrir.sh --parar  -> para o servidor
-# Variáveis opcionais: HABITOS_PORTA (padrão 3000), HABITOS_SEM_NAVEGADOR=1 (não abre o Chrome)
+# Variáveis opcionais: HABITOS_PORTA (padrão 3618), HABITOS_SEM_NAVEGADOR=1 (não abre o Chrome)
 set -u
 
 APP_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
-PORTA="${HABITOS_PORTA:-3000}"
+PORTA="${HABITOS_PORTA:-3618}"
 URL="http://localhost:$PORTA"
 LOG="$APP_DIR/data/servidor.log"
 

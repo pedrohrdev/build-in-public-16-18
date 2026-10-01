@@ -9,7 +9,7 @@ tudo é lido a cada acesso e cada dia guarda o texto bruto completo.
 ```bash
 cd habit-system
 npm install
-npm run dev        # http://localhost:3000
+npm run dev        # http://localhost:3618
 ```
 
 ## Abas
@@ -42,7 +42,7 @@ Os endereços antigos `/dias`, `/novo` e `/relatorio` levam para a aba correspon
 ## Atalho na área de trabalho
 
 `scripts/abrir.sh` sobe o servidor (com `GITHUB_TOKEN=$(gh auth token)`) se ele não estiver rodando
-e abre `http://localhost:3000` no Chrome. `scripts/abrir.sh --parar` desliga o servidor.
+e abre `http://localhost:3618` no Chrome. `scripts/abrir.sh --parar` desliga o servidor.
 O atalho "Hábitos 16→18" (área de trabalho e menu de aplicativos) chama esse script;
 clique direito nele → "Parar servidor". O log fica em `data/servidor.log`.
 
