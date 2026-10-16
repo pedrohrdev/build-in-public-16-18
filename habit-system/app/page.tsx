@@ -1,3 +1,4 @@
+import { readPreferences } from "@/lib/preferences-store";
 import { connection } from "next/server";
 import DashboardView from "@/components/dashboard";
 import type { Report } from "@/lib/dashboard";
@@ -7,9 +8,7 @@ import { localToday } from "@/lib/stats";
 export default async function Home() {
   await connection();
   const logs = loadLogs();
-  if (!logs.days.length && !logs.monthSummaries.length) {
-    return <p className="p-8">Nenhum registro encontrado em {logs.root}.</p>;
-  }
+  const settings = readPreferences();
   const report: Report = {
     root: logs.root,
     files: logs.files.length,
@@ -20,6 +19,7 @@ export default async function Home() {
   };
   return (
     <DashboardView
+      settings={settings}
       days={logs.days.map(toDayLite)}
       summaries={logs.monthSummaries.map(toSummaryLite)}
       report={report}

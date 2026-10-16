@@ -17,8 +17,8 @@ if (!fs.existsSync(envFile)) {
   let user;
   try {
     do {
-      user = (await prompt.question("Seu usuario do GitHub (sem @): ")).trim();
-    } while (!/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(user));
+      user = (await prompt.question("Seu usuario do GitHub (sem @; Enter para usar sem GitHub): ")).trim();
+    } while (user && !/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(user));
   } finally {
     prompt.close();
   }

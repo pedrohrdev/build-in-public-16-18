@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "setup:windows": "node scripts/setup-windows.mjs",
+    "test": "node --no-warnings tests/preferences.test.ts",
     "dev": "next dev -p 3618",
     "build": "next build",
     "start": "next start -p 3618",

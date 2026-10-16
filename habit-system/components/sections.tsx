@@ -2,31 +2,24 @@
 
 // Seções do painel. Cada aba (Hoje, Mês, Ano, ...) monta as suas a partir daqui.
 
+import { useHabits, usePreferences } from "./preferences-context";
+import { formatHabit, habitAmount } from "@/lib/preferences";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
-import type { Dashboard, DayLite, HabitKey, HabitStats, Report, SummaryLite } from "@/lib/dashboard";
+import type { Dashboard, HabitKey, HabitStats, Report, SummaryLite } from "@/lib/dashboard";
 import { brDate, formatDuration, formatHours, longDate, monthName } from "@/lib/format";
 import { AreaChart, BarChart, Heatmap } from "./charts";
 import { useOverlays } from "./overlays";
 import { Card, CountUp, EASE, Legend, Reveal, Ring, Section } from "./ui";
 
-export const HABITS: Record<
-  HabitKey,
-  { label: string; color: string; icon: string; unit: "min" | "pages"; thresholds: [number, number, number]; of: (d: DayLite) => number }
-> = {
-  programming: { label: "Programação", color: "var(--prog)", icon: "💻", unit: "min", thresholds: [30, 90, 180], of: (d) => d.prog ?? 0 },
-  english: { label: "Inglês", color: "var(--eng)", icon: "🗣️", unit: "min", thresholds: [30, 60, 90], of: (d) => d.eng ?? 0 },
-  reading: { label: "Leitura", color: "var(--read)", icon: "📖", unit: "pages", thresholds: [5, 15, 30], of: (d) => d.pages ?? 0 },
-};
-
-export const fmt = (k: HabitKey) => (v: number) => (HABITS[k].unit === "pages" ? `${Math.round(v)} pág.` : formatDuration(Math.round(v)));
 export const tickHours = (v: number) => `${Math.round(v / 60)}h`;
 
 /* ------------------------------------------------------------------ hero */
 
 export function Hero({ data }: { data: Dashboard }) {
+  const preferences = usePreferences();
   const { overall } = data;
-  const words = ["Construindo", "em", "público,", "dos", "16", "aos", "18."];
+  const words = preferences.name ? [`${preferences.name},`, "um", "dia", "de", "cada", "vez."] : ["Sua", "rotina,", "um", "dia", "de", "cada", "vez."];
   return (
     <header className="relative flex min-h-[92vh] flex-col justify-center overflow-hidden px-4 md:px-8">
       {/* blobs animados de fundo */}
@@ -122,6 +115,7 @@ export function Hero({ data }: { data: Dashboard }) {
 /* --------------------------------------------------------------- resumo */
 
 export function Summary({ data }: { data: Dashboard }) {
+  const HABITS = useHabits();
   const { overall, habits } = data;
   const consistency = overall.span ? overall.studiedDays / overall.span : 0;
   return (
@@ -192,8 +186,8 @@ export function Summary({ data }: { data: Dashboard }) {
                   </span>
                 </div>
                 <div className="mt-3 text-4xl font-semibold">
-                  <CountUp value={h.total} format={cfg.unit === "pages" ? (n) => `${Math.round(n)}` : formatHours} />
-                  {cfg.unit === "pages" && <span className="ml-1 text-lg text-muted">pág.</span>}
+                  <CountUp value={h.total} format={cfg.unit !== "min" ? (n) => `${Math.round(n)}` : formatHours} />
+                  {cfg.unit !== "min" && <span className="ml-1 text-lg text-muted">{cfg.unit === "pages" ? "pág." : "vezes"}</span>}
                 </div>
                 <div className="mt-4 flex h-10 items-end gap-1">
                   {spark.map((v, j) => (
@@ -221,6 +215,8 @@ export function Summary({ data }: { data: Dashboard }) {
 /* ------------------------------------------------------- todos os dias */
 
 export function AllDays({ data, from, to }: { data: Dashboard; from?: string; to?: string }) {
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
   const { openDay } = useOverlays();
   const [filter, setFilter] = useState<"all" | HabitKey>("all");
   const opts: { k: "all" | HabitKey; label: string; color: string }[] = [
@@ -270,9 +266,7 @@ export function AllDays({ data, from, to }: { data: Dashboard; from?: string; to
               ) : (
                 <>
                   <div className="font-semibold">Day {d.dayNumber ?? "?"}</div>
-                  {d.prog != null && <div>💻 {formatDuration(d.prog)}</div>}
-                  {d.eng != null && <div>🗣️ {formatDuration(d.eng)}</div>}
-                  {d.pages != null && <div>📖 {d.pages} pág.</div>}
+                  {KEYS.filter(k => habitAmount(d, k) > 0).map(k => <div key={k}>{HABITS[k].label}: {HABITS[k].format(habitAmount(d, k))}</div>)}
                   {!d.studied && <div className="text-faint">sem estudo</div>}
                 </>
               )}
@@ -287,9 +281,11 @@ export function AllDays({ data, from, to }: { data: Dashboard; from?: string; to
 /* ------------------------------------------------------- visão geral */
 
 export function Overview({ data }: { data: Dashboard }) {
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
   const { habits, weekday, months } = data;
-  const bestWd = weekday.reduce((b, w) => (w.prog + w.eng > b.prog + b.eng ? w : b));
-  const bestMonth = months.reduce((b, m) => (m.prog + m.eng > b.prog + b.eng ? m : b));
+  const bestWd = weekday.reduce((b, w) => (w.minutes > b.minutes ? w : b));
+  const bestMonth = months.length ? months.reduce((b, m) => (m.minutes > b.minutes ? m : b)) : null;
   return (
     <Section
       id="geral"
@@ -297,60 +293,23 @@ export function Overview({ data }: { data: Dashboard }) {
       title="O quadro completo"
       subtitle={
         <>
-          Seu melhor mês foi <b className="text-foreground">{monthName(bestMonth.key)}</b> e o dia da semana mais forte é{" "}
+          Seu melhor mês foi <b className="text-foreground">{bestMonth ? monthName(bestMonth.key) : "—"}</b> e o dia da semana mais forte é{" "}
           <b className="text-foreground">{bestWd.label}</b>.
         </>
       }
     >
       <div className="grid gap-4 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
-          <div className="mb-1 font-medium">Horas acumuladas</div>
-          <div className="mb-5">
-            <Legend items={[{ color: "var(--prog)", label: "programação", line: true }, { color: "var(--eng)", label: "inglês", line: true }]} />
-          </div>
-          <AreaChart
-            dates={data.timeline}
-            series={[
-              { key: "p", label: "programação", color: "var(--prog)", values: habits.programming.cumulative.map((c) => c.value) },
-              { key: "e", label: "inglês", color: "var(--eng)", values: habits.english.cumulative.map((c) => c.value) },
-            ]}
-            format={(v) => formatDuration(Math.round(v))}
-            tickFormat={tickHours}
-            unit={60}
-            fill={false}
-          />
-        </Card>
-        <Card className="lg:col-span-2" delay={0.08}>
-          <div className="mb-1 font-medium">Horas por mês</div>
-          <div className="mb-5">
-            <Legend items={[{ color: "var(--prog)", label: "programação" }, { color: "var(--eng)", label: "inglês" }]} />
-          </div>
-          <BarChart
-            labels={months.map((m) => m.label.slice(0, 3))}
-            series={[
-              { key: "p", label: "programação", color: "var(--prog)", values: months.map((m) => m.prog) },
-              { key: "e", label: "inglês", color: "var(--eng)", values: months.map((m) => m.eng) },
-            ]}
-            format={(v) => formatDuration(Math.round(v))}
-            tickFormat={tickHours}
-            unit={60}
-          />
-        </Card>
-        <Card className="lg:col-span-3">
-          <div className="mb-1 font-medium">Média por dia da semana</div>
-          <p className="mb-5 text-sm text-muted">Tempo médio de estudo em cada dia da semana (dias registrados).</p>
-          <BarChart
-            labels={weekday.map((w) => w.label)}
-            series={[
-              { key: "p", label: "programação", color: "var(--prog)", values: weekday.map((w) => w.prog) },
-              { key: "e", label: "inglês", color: "var(--eng)", values: weekday.map((w) => w.eng) },
-            ]}
-            format={(v) => formatDuration(Math.round(v))}
-            tickFormat={(v) => formatDuration(Math.round(v))}
-            unit={30}
-            height={180}
-          />
-        </Card>
+        {(["min", "pages", "count"] as const).filter(unit => KEYS.some(k => HABITS[k].unit === unit)).map(unit => {
+          const keys = KEYS.filter(k => HABITS[k].unit === unit);
+          const label = unit === "min" ? "Tempo" : unit === "pages" ? "Páginas" : "Quantidade";
+          const format = (v: number) => formatHabit(v, unit);
+          const legend = keys.map(k => ({ label: HABITS[k].label, color: HABITS[k].color }));
+          return <div key={unit} className="contents">
+            <Card className="lg:col-span-3"><div className="mb-4 font-medium">{label} acumulado</div><Legend items={legend} /><AreaChart dates={data.timeline} series={keys.map(k => ({ key: k, label: HABITS[k].label, color: HABITS[k].color, values: habits[k].cumulative.map(c => c.value) }))} format={format} tickFormat={format} unit={unit === "min" ? 60 : 1} fill={false} /></Card>
+            <Card className="lg:col-span-2"><div className="mb-4 font-medium">{label} por mês</div><Legend items={legend} /><BarChart labels={months.map(m => m.label)} series={keys.map(k => ({ key: k, label: HABITS[k].label, color: HABITS[k].color, values: months.map(m => m.values[k] ?? 0) }))} format={format} tickFormat={format} unit={unit === "min" ? 60 : 1} /></Card>
+            <Card className="lg:col-span-3"><div className="mb-4 font-medium">{label}: média por dia da semana</div><BarChart labels={weekday.map(w => w.label)} series={keys.map(k => ({ key: k, label: HABITS[k].label, color: HABITS[k].color, values: weekday.map(w => w.values[k] ?? 0) }))} format={format} tickFormat={format} unit={unit === "min" ? 30 : 1} height={180} /></Card>
+          </div>;
+        })}
         <Card className="lg:col-span-2" delay={0.08}>
           <div className="mb-1 font-medium">Dias com estudo, por dia da semana</div>
           <p className="mb-5 text-sm text-muted">De cada 100 segundas registradas, em quantas você estudou.</p>
@@ -380,6 +339,8 @@ export function Overview({ data }: { data: Dashboard }) {
 /* ------------------------------------------------------- cada hábito */
 
 export function HabitSection({ k, stats, data }: { k: HabitKey; stats: HabitStats; data: Dashboard }) {
+  const HABITS = useHabits();
+  const fmt = (key: string) => HABITS[key].format;
   const extraNote = stats.extra > 0 ? `inclui ${fmt(k)(stats.extra)} de resumos mensais` : null;
   const cfg = HABITS[k];
   const f = fmt(k);
@@ -391,15 +352,15 @@ export function HabitSection({ k, stats, data }: { k: HabitKey; stats: HabitStat
   };
 
   return (
-    <Section id={k} eyebrow={cfg.label} color={cfg.color} title={titles[k]}>
+    <Section id={k} eyebrow={cfg.label} color={cfg.color} title={titles[k] ?? cfg.label}>
       <div className="grid gap-4 lg:grid-cols-4">
         <Card className="flex flex-col justify-between lg:row-span-2">
           <div>
             <div className="text-sm text-muted">total</div>
             <div className="text-5xl font-semibold tracking-tight md:text-6xl" style={{ color: cfg.color }}>
-              <CountUp value={stats.total} format={cfg.unit === "pages" ? (n) => `${Math.round(n)}` : formatHours} />
+              <CountUp value={stats.total} format={cfg.unit !== "min" ? (n) => `${Math.round(n)}` : formatHours} />
             </div>
-            <div className="text-sm text-muted">{cfg.unit === "pages" ? "páginas lidas" : "de estudo registrado"}</div>
+            <div className="text-sm text-muted">{cfg.unit === "pages" ? "páginas" : cfg.unit === "count" ? "vezes" : "de atividade registrada"}</div>
             {extraNote && <div className="mt-1 text-xs text-faint">{extraNote}</div>}
           </div>
           <dl className="mt-8 space-y-4 text-sm">
@@ -433,9 +394,9 @@ export function HabitSection({ k, stats, data }: { k: HabitKey; stats: HabitStat
           <AreaChart
             dates={stats.cumulative.map((c) => c.date)}
             series={[{ key: k, label: cfg.label.toLowerCase(), color: cfg.color, values: stats.cumulative.map((c) => c.value) }]}
-            format={cfg.unit === "pages" ? (v) => `${Math.round(v)} pág.` : (v) => formatDuration(Math.round(v))}
-            tickFormat={cfg.unit === "pages" ? (v) => `${Math.round(v)}` : tickHours}
-            unit={cfg.unit === "pages" ? 1 : 60}
+            format={cfg.format}
+            tickFormat={cfg.unit !== "min" ? (v) => `${Math.round(v)}` : tickHours}
+            unit={cfg.unit !== "min" ? 1 : 60}
             height={220}
           />
         </Card>
@@ -444,8 +405,8 @@ export function HabitSection({ k, stats, data }: { k: HabitKey; stats: HabitStat
           <BarChart
             labels={stats.monthly.map((m) => m.label.slice(0, 3))}
             series={[{ key: k, label: cfg.label.toLowerCase(), color: cfg.color, values: stats.monthly.map((m) => m.value) }]}
-            format={cfg.unit === "pages" ? (v) => `${Math.round(v)}` : (v) => formatHours(v)}
-            unit={cfg.unit === "pages" ? 1 : 60}
+            format={cfg.unit !== "min" ? (v) => `${Math.round(v)}` : (v) => formatHours(v)}
+            unit={cfg.unit !== "min" ? 1 : 60}
             height={180}
           />
         </Card>
@@ -475,6 +436,8 @@ export function HabitSection({ k, stats, data }: { k: HabitKey; stats: HabitStat
 /* ------------------------------------------------------------ meses */
 
 export function Months({ data }: { data: Dashboard }) {
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
   const { openDay } = useOverlays();
   const byDate = useMemo(() => new Map(data.days.map((d) => [d.date, d])), [data.days]);
   const months = [...data.months].reverse();
@@ -526,7 +489,7 @@ export function Months({ data }: { data: Dashboard }) {
             >
               <div className="flex items-start justify-between">
                 <h3 className="text-2xl font-semibold capitalize">{monthName(m.key)}</h3>
-                {m.progDelta != null && (
+                {HABITS.programming && m.progDelta != null && (
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${m.progDelta >= 0 ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-red-500/15 text-red-700 dark:text-red-400"}`}
                     title="programação vs mês anterior"
@@ -568,11 +531,7 @@ export function Months({ data }: { data: Dashboard }) {
                 })}
               </div>
               <div className="mt-6 grid grid-cols-3 gap-2 text-center">
-                {[
-                  { v: formatHours(m.prog), l: "código", c: "var(--prog)" },
-                  { v: formatHours(m.eng), l: "inglês", c: "var(--eng)" },
-                  { v: `${m.pages}`, l: "páginas", c: "var(--read)" },
-                ].map((s) => (
+                {KEYS.map(k => ({ v: HABITS[k].format(m.values[k] ?? 0), l: HABITS[k].label, c: HABITS[k].color })).map((s) => (
                   <div key={s.l} className="rounded-2xl bg-card-2 py-3">
                     <div className="text-lg font-semibold tabular-nums">{s.v}</div>
                     <div className="flex items-center justify-center gap-1 text-[11px] text-muted">
@@ -655,6 +614,8 @@ export function Achievements({ data }: { data: Dashboard }) {
 /* ----------------------------------------------------------- diário */
 
 export function Journal({ data }: { data: Dashboard }) {
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
   const { openDay } = useOverlays();
   const [q, setQ] = useState("");
   const [limit, setLimit] = useState(12);
@@ -699,9 +660,7 @@ export function Journal({ data }: { data: Dashboard }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-3 text-xs text-muted">
                       <span>Day {d.dayNumber ?? "?"}</span>
-                      {d.prog ? <span className="text-prog">● {formatDuration(d.prog)}</span> : null}
-                      {d.eng ? <span className="text-eng">● {formatDuration(d.eng)}</span> : null}
-                      {d.pages ? <span className="text-read">● {d.pages} pág.</span> : null}
+                      {KEYS.filter(k => habitAmount(d, k) > 0).map(k => <span key={k} style={{ color: HABITS[k].color }}>● {HABITS[k].label}: {HABITS[k].format(habitAmount(d, k))}</span>)}
                     </div>
                     <div className="mt-0.5 truncate">{text || <span className="text-faint">sem anotações neste dia</span>}</div>
                   </div>
@@ -798,11 +757,9 @@ export function Fab({ logged }: { logged: boolean }) {
 /* ------------------------------------------- aviso de resumo mensal */
 
 export function ExtraNote({ extra }: { extra: NonNullable<Dashboard["months"][number]["extra"]> }) {
-  const parts = [
-    extra.prog ? `${formatDuration(extra.prog)} de código` : null,
-    extra.eng ? `${formatDuration(extra.eng)} de inglês` : null,
-    extra.pages ? `${extra.pages} pág.` : null,
-  ].filter(Boolean);
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
+  const parts = KEYS.filter(k => habitAmount(extra, k) > 0).map(k => `${HABITS[k].format(habitAmount(extra, k))} de ${HABITS[k].label}`);
   return (
     <p className="mt-4 rounded-xl bg-card-2 px-3 py-2 text-xs text-muted" title={extra.summary.file}>
       🗂️ resumo mensal{parts.length ? `: ${parts.join(" · ")} sem dia definido` : " (já coberto pelos dias registrados)"}

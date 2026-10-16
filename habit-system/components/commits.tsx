@@ -14,9 +14,10 @@ type State = { status: "loading" } | { status: "done"; data: GithubData };
 const GithubCtx = createContext<State>({ status: "loading" });
 export const useGithub = () => useContext(GithubCtx);
 
-export function GithubProvider({ children }: { children: ReactNode }) {
+export function GithubProvider({ children, enabled = true }: { children: ReactNode; enabled?: boolean }) {
   const [state, setState] = useState<State>({ status: "loading" });
   useEffect(() => {
+    if (!enabled) return;
     let alive = true;
     fetch("/api/github")
       .then((r) => r.json() as Promise<GithubData>)
@@ -39,7 +40,7 @@ export function GithubProvider({ children }: { children: ReactNode }) {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [enabled]);
   return <GithubCtx.Provider value={state}>{children}</GithubCtx.Provider>;
 }
 

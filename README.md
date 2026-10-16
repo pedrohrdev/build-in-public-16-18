@@ -11,9 +11,10 @@ npm.cmd install
 npm.cmd run setup:windows
 ```
 
-Informe **seu usuário do GitHub, sem `@`**. Depois, clique em **Meus habitos** na Área de Trabalho. O atalho inicia o servidor e abre o navegador padrão em `http://localhost:3618`.
+Informe **seu usuário do GitHub, sem `@`**, ou pressione Enter para usar sem GitHub. Depois, clique em **Meus habitos** na Área de Trabalho. O atalho inicia o servidor e abre o navegador padrão em `http://localhost:3618`.
 
-- Seu painel começa sem os registros do autor. Clique em **Registrar hoje** para começar.
+- Na primeira abertura, siga a configuração: informe seu nome (opcional), escolha os hábitos e confirme.
+- Seu painel começa sem os registros do autor. Clique em **Registrar hoje**: o primeiro registro será o **Day 1**.
 - Mantenha a janela do servidor aberta durante o uso. Feche-a para desligá-lo.
 - Nas próximas vezes, basta clicar no atalho; não precisa repetir a instalação.
 
@@ -64,6 +65,16 @@ O aplicativo fica em `habit-system/` e usa **Next.js, React e TypeScript**. Os r
 
 ## Funcionalidades
 
+### Configuração inicial e hábitos pessoais
+
+Na primeira abertura, o sistema mostra um onboarding em três etapas: você, seus hábitos e confirmação. Você pode acompanhar só programação, desativar inglês e leitura ou criar outros hábitos, como caminhada, música e matemática. Os hábitos próprios podem ser medidos por tempo, páginas ou quantidade de vezes. É necessário escolher pelo menos um hábito.
+
+As escolhas são salvas neste computador e aplicadas aos formulários, gráficos, sequências e conquistas. A atividade do GitHub é opcional. Use **Personalizar**, no topo do painel, para rever suas escolhas. Desativar um hábito não apaga os registros: ao reativá-lo, seu histórico volta a aparecer.
+
+O onboarding não cria registros nem avança a contagem de dias. Se você já tem um histórico, ele continua preservado; o Day 1 é para quem começa com a pasta pessoal vazia.
+
+### Painel
+
 - **Hoje:** atividades do dia, sequência, médias e comparações com dias e semanas anteriores.
 - **Mês:** calendário, horas de estudo, páginas lidas e histórico. Permite completar dias antigos e informar totais mensais.
 - **Ano:** evolução anual, mapa de atividade e totais por mês.
@@ -85,6 +96,8 @@ No Windows, o instalador configura estes locais:
 Para abrir seus registros no Windows, pressione `Win+R`, cole `%LOCALAPPDATA%\Habitos\registros` e pressione Enter. Faça backup dessa pasta para preservar seu histórico.
 
 O `.env.local` e a pasta `data/` são ignorados pelo Git. Os registros pessoais configurados pelo instalador ficam fora do repo. Instalações no mesmo usuário do Windows usam a mesma pasta pessoal por padrão; altere `LOGS_ROOT` se quiser históricos separados.
+
+As preferências do onboarding ficam em `habit-system/data/preferences-*.json`, separadas por pasta de registros. Inclua esses arquivos no backup para preservar também os nomes e as unidades dos hábitos próprios. Limpar o cache do navegador não apaga suas escolhas.
 
 Os registros públicos do autor continuam nos arquivos clonados. **A configuração pessoal faz o painel ler sua própria pasta.** Sem `LOGS_ROOT`, o aplicativo lê os registros do repo; sem `GITHUB_USER`, usa `pedrohrdev`.
 

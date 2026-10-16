@@ -1,10 +1,12 @@
 "use client";
 
+import { useHabits, usePreferences } from "./preferences-context";
+import { fieldName, habitAmount } from "@/lib/preferences";
 import { AnimatePresence, motion } from "motion/react";
 import { createContext, useActionState, useContext, useEffect, useState, type ReactNode } from "react";
 import { createDay, type NewDayState } from "@/app/actions";
 import type { DayLite } from "@/lib/dashboard";
-import { brDate, formatDuration, longDate } from "@/lib/format";
+import { brDate, longDate } from "@/lib/format";
 import { DayCommits } from "./commits";
 import { EASE } from "./ui";
 
@@ -59,6 +61,8 @@ function DayModal({
   onChange: (d: string) => void;
   onClose: () => void;
 }) {
+  const HABITS = useHabits();
+  const preferences = usePreferences();
   const i = days.findIndex((d) => d.date === date);
   const d = days[i];
   const prev = days[i - 1];
@@ -82,11 +86,9 @@ function DayModal({
 
   if (!d) return null;
   const chips = [
-    { label: "programação", value: d.prog != null ? formatDuration(d.prog) : null, color: "var(--prog)" },
-    { label: "inglês", value: d.eng != null ? formatDuration(d.eng) : null, color: "var(--eng)" },
-    { label: "leitura", value: d.pages != null ? `${d.pages} pág.` : null, color: "var(--read)" },
+    ...Object.values(HABITS).map(h => ({ label: h.label, value: habitAmount(d, h.id) ? h.format(habitAmount(d, h.id)) : null, color: h.color })),
     { label: "nota do dia", value: d.score != null ? `${d.score}/10` : null, color: "var(--accent)" },
-  ].filter((c) => c.value);
+  ].filter(c => c.value);
 
   return (
     <>
@@ -157,7 +159,7 @@ function DayModal({
               {d.study && <Block label="Estudo">{d.study}</Block>}
               {d.learned && <Block label="O que aprendi">{d.learned}</Block>}
               {d.notes && <Block label="Notas">{d.notes}</Block>}
-              <DayCommits date={d.date} />
+              {preferences.github && <DayCommits date={d.date} />}
               {d.groupedWith.length > 0 && (
                 <p className="text-sm text-muted">Registrado no mesmo arquivo que {d.groupedWith.map(brDate).join(", ")}.</p>
               )}
@@ -264,26 +266,7 @@ export function DayFields({ defaultDate, max, min }: { defaultDate: string; max:
         <span className="text-sm text-muted">Data</span>
         <input type="date" name="date" defaultValue={defaultDate} min={min} max={max} required className={input} />
       </label>
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { name: "programming", label: "Programação", ph: "2h30", color: "var(--prog)" },
-          { name: "english", label: "Inglês", ph: "1h", color: "var(--eng)" },
-          { name: "pages", label: "Páginas", ph: "10", color: "var(--read)" },
-        ].map((f) => (
-          <label key={f.name} className="block space-y-1.5">
-            <span className="flex items-center gap-1.5 text-sm text-muted">
-              <span className="h-2 w-2 rounded-full" style={{ background: f.color }} />
-              {f.label}
-            </span>
-            <input
-              name={f.name}
-              placeholder={f.ph}
-              inputMode={f.name === "pages" ? "numeric" : "text"}
-              className={input}
-            />
-          </label>
-        ))}
-      </div>
+      <HabitFields />
       <label className="block space-y-1.5">
         <span className="text-sm text-muted">O que aprendi</span>
         <textarea name="learned" rows={5} className={input} />
@@ -317,4 +300,12 @@ export function Burst() {
       })}
     </div>
   );
+}
+
+export function HabitFields({ monthly = false }: { monthly?: boolean }) {
+  const habits = useHabits();
+  return <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{Object.values(habits).map(h => <label key={h.id} className="block space-y-1.5">
+    <span className="flex items-center gap-1.5 text-sm text-muted"><span className="h-2 w-2 rounded-full" style={{ background: h.color }} />{h.label} <span className="text-xs">({h.unit === "min" ? "tempo" : h.unit === "pages" ? "páginas" : "vezes"})</span></span>
+    <input name={fieldName(h.id)} placeholder={h.unit === "min" ? monthly ? "20h" : "45min" : "10"} inputMode={h.unit === "min" ? "text" : "numeric"} className={input} />
+  </label>)}</div>;
 }

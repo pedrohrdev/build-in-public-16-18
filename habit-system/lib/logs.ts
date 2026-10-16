@@ -10,6 +10,7 @@ export { formatDuration };
 export type LogFormat = "v1" | "v2" | "livre";
 
 export type DayEntry = {
+  custom?: Record<string, number>;
   date: string; // YYYY-MM-DD
   dayNumber: number | null;
   file: string; // caminho relativo à raiz dos logs
@@ -34,6 +35,7 @@ export type FileReport = { file: string; dates: string[]; warnings: string[] };
 
 // Resumo retroativo de um mês inteiro (quando não há registro por dia)
 export type MonthSummary = {
+  custom?: Record<string, number>;
   key: string; // YYYY-MM
   programmingMin: number | null;
   englishMin: number | null;
@@ -150,7 +152,7 @@ function parseBody(raw: string): Parsed {
     study: "", learned: "", notes: "", warnings,
   };
 
-  if (/\|\s*Programming\s*\|/i.test(body)) {
+  if (/\|\s*(Programming|English|Read)\s*\|/i.test(body) || /<!-- habits-v1: /.test(raw)) {
     base.format = "v2";
     for (const line of body.split("\n")) {
       const cells = line.split("|").map((c) => c.trim());
@@ -175,7 +177,7 @@ function parseBody(raw: string): Parsed {
     const sum = (base.programmingMin ?? 0) + (base.englishMin ?? 0);
     if (base.totalMin == null && (base.programmingMin != null || base.englishMin != null)) {
       base.totalMin = sum;
-    } else if (base.totalMin != null && sum > 0 && base.totalMin !== sum) {
+    } else if (base.totalMin != null && sum > 0 && base.totalMin !== sum && !Object.keys(readCustom(raw)).length) {
       warnings.push(
         `"Total study time" (${formatDuration(base.totalMin)}) diferente de programação + inglês (${formatDuration(sum)})`,
       );
@@ -216,6 +218,7 @@ function parseBody(raw: string): Parsed {
 }
 
 function walk(dir: string, out: string[]) {
+  if (!fs.existsSync(dir)) return;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory()) {
       if (!SKIP_DIRS.has(entry.name)) walk(path.join(dir, entry.name), out);
@@ -242,7 +245,7 @@ export function loadLogs(root = logsRoot()): LoadResult {
     if (summary) {
       const raw = fs.readFileSync(abs, "utf8");
       const s: MonthSummary = {
-        key: `${summary[2]}-${summary[1]}`,
+        key: `${summary[2]}-${summary[1]}`, custom: readCustom(raw),
         programmingMin: null, englishMin: null, pages: null, notes: "", file: rel, raw,
       };
       for (const line of stripFence(raw).split("\n")) {
@@ -315,6 +318,7 @@ export function loadLogs(root = logsRoot()): LoadResult {
       }
       days.push({
         ...parsed,
+        custom: readCustom(raw),
         warnings: [...fileWarnings, ...parsed.warnings],
         study,
         date,
@@ -361,6 +365,7 @@ export function didStudy(d: DayEntry): boolean {
 // Formato enxuto enviado ao navegador
 export function toDayLite(d: DayEntry): DayLite {
   return {
+    custom: d.custom,
     date: d.date,
     dayNumber: d.dayNumber,
     prog: d.programmingMin,
@@ -380,7 +385,7 @@ export function toDayLite(d: DayEntry): DayLite {
 }
 
 export function toSummaryLite(s: MonthSummary): SummaryLite {
-  return { key: s.key, prog: s.programmingMin, eng: s.englishMin, pages: s.pages, notes: s.notes, file: s.file, raw: s.raw };
+  return { custom: s.custom, key: s.key, prog: s.programmingMin, eng: s.englishMin, pages: s.pages, notes: s.notes, file: s.file, raw: s.raw };
 }
 
 // Pasta onde um mês novo é gravado: usa a que já existir; meses passados sem pasta
@@ -392,4 +397,14 @@ export function monthDir(root: string, year: number, month: number, todayKey: st
   if (fs.existsSync(atRoot)) return atRoot;
   if (fs.existsSync(old)) return old;
   return `${year}-${pad(month)}` < todayKey ? old : atRoot;
+}
+
+// Stable IDs keep custom habit history readable even when a habit is disabled.
+function readCustom(raw: string): Record<string, number> {
+  const match = raw.match(/<!-- habits-v1: (.+) -->/);
+  if (!match) return {};
+  try {
+    const data = JSON.parse(match[1]);
+    return Object.fromEntries(Object.entries(data).filter(([id, value]) => /^custom-[a-z0-9-]+$/.test(id) && typeof value === "number" && Number.isFinite(value) && value >= 0)) as Record<string, number>;
+  } catch { return {}; }
 }

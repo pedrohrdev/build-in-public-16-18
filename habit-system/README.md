@@ -23,7 +23,8 @@ npm.cmd install
 npm.cmd run setup:windows
 ```
 
-Informe seu usuário do GitHub, sem `@`. O instalador cria `.env.local` (ignorado
+Informe seu usuário do GitHub, sem `@`, ou pressione Enter para usar sem GitHub.
+O instalador cria `.env.local` (ignorado
 pelo Git), configura seus registros em `%LOCALAPPDATA%\Habitos\registros` e cria
 **Meus habitos** na Área de Trabalho, com o ícone do sistema. O painel começa sem
 os registros do autor. Os registros públicos do autor continuam nos arquivos do
@@ -40,6 +41,19 @@ confira `LOGS_ROOT` e `GITHUB_USER` se já tinha configurado o app. Os registros
 pessoais ficam fora do repo; mantenha uma cópia de segurança dessa pasta.
 
 ## Abas
+
+Na primeira abertura, o onboarding permite escolher os hábitos que você quer acompanhar
+e criar hábitos próprios medidos por tempo, páginas ou quantidade. Use **Personalizar**
+para rever as escolhas depois. Hábitos desativados mantêm o histórico nos arquivos;
+ao reativá-los, os dados voltam ao painel. A integração com o GitHub é opcional.
+Com uma pasta pessoal vazia, o primeiro registro criado é o **Day 1**.
+
+As preferências ficam em `data/preferences-*.json`; inclua esses arquivos no backup
+junto com seus registros. Para conferir os cálculos e a leitura dos formatos:
+
+```bash
+npm test
+```
 
 A barra no topo troca de aba (a aba fica no endereço, ex.: `/#mes`, então recarregar e o "voltar" funcionam):
 

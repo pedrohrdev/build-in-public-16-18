@@ -1,11 +1,14 @@
 "use client";
 
+import { Onboarding } from "./onboarding";
+import { PreferencesContext } from "./preferences-context";
+import { activeHabits, type Preferences } from "@/lib/preferences";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { buildDashboard, computeExtras, type DayLite, type Report, type SummaryLite } from "@/lib/dashboard";
 import { CommitsSection, GithubProvider } from "./commits";
 import { OverlayProvider } from "./overlays";
-import { Achievements, Backstage, Fab, HABITS, HabitSection, Journal } from "./sections";
+import { Achievements, Backstage, Fab, HabitSection, Journal } from "./sections";
 import { MonthTab, TodayTab, YearTab } from "./tabs";
 import { EASE, ScrollProgress } from "./ui";
 
@@ -58,14 +61,18 @@ export default function DashboardView({
   summaries,
   report,
   today,
+  settings,
 }: {
+  settings: { preferences: Preferences; configured: boolean };
   days: DayLite[];
   summaries: SummaryLite[];
   report: Report;
   today: string;
 }) {
+  const [editing, setEditing] = useState(false);
+  const preferences = settings.preferences;
   const extras = useMemo(() => computeExtras(days, summaries), [days, summaries]);
-  const all = useMemo(() => buildDashboard(days, extras, today), [days, extras, today]);
+  const all = useMemo(() => buildDashboard(days, extras, today, preferences), [days, extras, today, preferences]);
   const loggedDates = useMemo(() => new Set(days.map((d) => d.date)), [days]);
   const hash = useHash();
   const tab = tabOf(hash);
@@ -85,8 +92,10 @@ export default function DashboardView({
     if (hash && window.location.hash.slice(1) !== hash) history.replaceState(null, "", `#${hash}`);
   });
 
+  if (!settings.configured || editing) return <Onboarding key={settings.configured ? "edit" : "first"} initial={preferences} editing={settings.configured} onClose={() => setEditing(false)} />;
   return (
-    <GithubProvider>
+    <PreferencesContext.Provider value={preferences}>
+    <GithubProvider enabled={preferences.github}>
     <OverlayProvider days={all.days} today={today}>
       <ScrollProgress />
       <nav className="sticky top-0 z-40 border-b border-border bg-background/75 backdrop-blur-xl">
@@ -94,6 +103,7 @@ export default function DashboardView({
           <a href="#hoje" className="shrink-0 font-semibold tracking-tight">
             16 <span className="text-accent">→</span> 18
           </a>
+          <button onClick={() => setEditing(true)} className="shrink-0 rounded-full border border-border px-3 py-1.5 text-sm text-muted">Personalizar</button>
           <div className="flex gap-1">
             {TABS.map((t) => (
               <a
@@ -122,16 +132,16 @@ export default function DashboardView({
           transition={{ duration: 0.3, ease: EASE }}
         >
           {tab === "hoje" && <TodayTab all={all} />}
-          {tab === "mes" && <MonthTab all={all} days={days} extras={extras} summaries={summaries} />}
-          {tab === "ano" && <YearTab days={days} extras={extras} today={today} />}
+          {tab === "mes" && <MonthTab all={all} days={all.days} extras={extras} summaries={summaries} />}
+          {tab === "ano" && <YearTab days={all.days} extras={extras} today={today} />}
           {tab !== "hoje" && tab !== "mes" && tab !== "ano" && (
             <main className="mx-auto max-w-6xl px-4 md:px-8">
               {tab === "habitos" && (
                 <>
-                  {(Object.keys(HABITS) as (keyof typeof HABITS)[]).map((k) => (
+                  {activeHabits(preferences).map(h => h.id).map((k) => (
                     <HabitSection key={k} k={k} stats={all.habits[k]} data={all} />
                   ))}
-                  <CommitsSection today={today} loggedDates={loggedDates} />
+                  {preferences.github && <CommitsSection today={today} loggedDates={loggedDates} />}
                 </>
               )}
               {tab === "conquistas" && <Achievements data={all} />}
@@ -148,5 +158,6 @@ export default function DashboardView({
       <Fab logged={all.loggedToday} />
     </OverlayProvider>
     </GithubProvider>
+    </PreferencesContext.Provider>
   );
 }

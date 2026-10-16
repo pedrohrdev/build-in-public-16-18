@@ -1,17 +1,19 @@
 "use client";
 
 // Abas novas: Hoje, Mês e Ano. Reaproveitam as seções de sections.tsx.
+import { useHabits, usePreferences } from "./preferences-context";
+import { habitAmount } from "@/lib/preferences";
 import { AnimatePresence, motion } from "motion/react";
 import { useActionState, useMemo, useState } from "react";
 import { createDay, createMonthSummary, type NewDayState } from "@/app/actions";
 import { buildDashboard, habitValue, type Dashboard, type DayLite, type HabitKey, type MonthExtra, type SummaryLite } from "@/lib/dashboard";
 import { addDays, addMonths, brDate, formatDuration, formatHours, longDate, monthEnd, monthName } from "@/lib/format";
 import { BarChart } from "./charts";
-import { DayFields, input, useOverlays } from "./overlays";
-import { AllDays, ExtraNote, HABITS, Hero, Months, Overview, Summary, fmt, tickHours } from "./sections";
+import { DayFields, HabitFields, input, useOverlays } from "./overlays";
+import { AllDays, ExtraNote, Hero, Months, Overview, Summary } from "./sections";
 import { Card, CountUp, EASE, Legend, Reveal, Ring, Section } from "./ui";
 
-const KEYS = Object.keys(HABITS) as HabitKey[];
+
 
 /* ================================================================ HOJE */
 
@@ -28,6 +30,9 @@ export function TodayTab({ all }: { all: Dashboard }) {
 }
 
 function TodayPanel({ all }: { all: Dashboard }) {
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
+  const fmt = (key: string) => HABITS[key].format;
   const { openDay, openNew } = useOverlays();
   const today = all.today;
   const byDate = new Map(all.days.map((d) => [d.date, d]));
@@ -41,7 +46,7 @@ function TodayPanel({ all }: { all: Dashboard }) {
   const dow = (new Date(today + "T00:00:00Z").getUTCDay() + 6) % 7;
   const weekStart = addDays(today, -dow);
   const sumRange = (from: string, to: string) =>
-    all.days.filter((d) => d.date >= from && d.date <= to).reduce((a, d) => a + (d.prog ?? 0) + (d.eng ?? 0), 0);
+    all.days.filter((d) => d.date >= from && d.date <= to).reduce((a, d) => a + d.minutes, 0);
   const thisWeek = sumRange(weekStart, today);
   const lastWeek = sumRange(addDays(weekStart, -7), addDays(today, -7));
   const last7 = Array.from({ length: 7 }, (_, i) => addDays(today, i - 6));
@@ -54,8 +59,8 @@ function TodayPanel({ all }: { all: Dashboard }) {
       subtitle={
         day
           ? done.length === KEYS.length
-            ? "Os três hábitos feitos hoje. Dia completo! 🎉"
-            : `Você já registrou hoje. ${done.length} de 3 hábitos feitos.`
+            ? "Todos os hábitos escolhidos feitos hoje. Dia completo! 🎉"
+            : `Você já registrou hoje. ${done.length} de ${KEYS.length} hábitos feitos.`
           : streak > 0
             ? `Ainda não registrou hoje. Estude e registre para a sequência ir para ${streak + 1} dias 🔥`
             : "Ainda não registrou hoje. Bora começar uma sequência nova?"
@@ -148,7 +153,7 @@ function TodayPanel({ all }: { all: Dashboard }) {
           <div className="grid grid-cols-7 gap-2">
             {last7.map((iso, i) => {
               const d = byDate.get(iso);
-              const max = Math.max(60, ...last7.map((x) => byDate.get(x)?.minutes ?? 0));
+              const max = (k: string) => Math.max(1, ...last7.map(x => { const day = byDate.get(x); return day ? habitValue(day, k) : 0; }));
               return (
                 <motion.button
                   key={iso}
@@ -164,11 +169,11 @@ function TodayPanel({ all }: { all: Dashboard }) {
                   <span className="text-[11px] text-muted">{["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][new Date(iso + "T00:00:00Z").getUTCDay()]}</span>
                   <div className="flex h-20 w-full items-end justify-center gap-[2px]">
                     {d ? (
-                      (["programming", "english"] as HabitKey[]).map((k) => (
+                      KEYS.map((k) => (
                         <motion.div
                           key={k}
                           className="w-2.5 rounded-t-[4px]"
-                          style={{ background: HABITS[k].color, height: `${(habitValue(d, k) / max) * 100}%`, transformOrigin: "bottom" }}
+                          style={{ background: HABITS[k].color, height: `${(habitValue(d, k) / max(k)) * 100}%`, transformOrigin: "bottom" }}
                           initial={{ scaleY: 0 }}
                           whileInView={{ scaleY: 1 }}
                           viewport={{ once: true }}
@@ -185,7 +190,7 @@ function TodayPanel({ all }: { all: Dashboard }) {
             })}
           </div>
           <div className="mt-4">
-            <Legend items={[{ color: "var(--prog)", label: "programação" }, { color: "var(--eng)", label: "inglês" }]} />
+            <Legend items={KEYS.map(k => ({ color: HABITS[k].color, label: HABITS[k].label }))} />
           </div>
         </Card>
 
@@ -220,6 +225,7 @@ export function MonthTab({
   extras: MonthExtra[];
   summaries: SummaryLite[];
 }) {
+  const preferences = usePreferences();
   const today = all.today;
   const current = today.slice(0, 7);
   const firstYear = Math.min(Number(today.slice(0, 4)), ...days.map((d) => Number(d.date.slice(0, 4))), ...summaries.map((s) => Number(s.key.slice(0, 4))));
@@ -235,8 +241,8 @@ export function MonthTab({
   };
 
   const md = useMemo(
-    () => buildDashboard(days.filter((d) => d.date.startsWith(key)), extras.filter((e) => e.key === key), today),
-    [days, extras, key, today],
+    () => buildDashboard(days.filter((d) => d.date.startsWith(key)), extras.filter((e) => e.key === key), today, preferences),
+    [days, extras, key, today, preferences],
   );
   const card = all.months.find((m) => m.key === key) ?? null;
   const hasData = md.days.length > 0 || md.extras.length > 0;
@@ -295,6 +301,8 @@ export function MonthTab({
 }
 
 function MonthStats({ md, card, today }: { md: Dashboard; card: Dashboard["months"][number]; today: string }) {
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
   const { openDay } = useOverlays();
   const elapsed = card.key === today.slice(0, 7) ? Number(today.slice(8)) : card.daysInMonth;
   return (
@@ -306,7 +314,7 @@ function MonthStats({ md, card, today }: { md: Dashboard; card: Dashboard["month
         <div className="text-sm text-muted">
           dias com estudo{card.key === today.slice(0, 7) ? " até hoje" : ""}
           {card.avgScore != null && <div className="mt-2">nota média <b className="text-foreground">{card.avgScore}</b></div>}
-          {card.progDelta != null && (
+          {HABITS.programming && card.progDelta != null && (
             <div className={`mt-2 ${card.progDelta >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>
               {card.progDelta >= 0 ? "▲" : "▼"} {Math.abs(card.progDelta)}% de código vs mês anterior
             </div>
@@ -320,7 +328,7 @@ function MonthStats({ md, card, today }: { md: Dashboard; card: Dashboard["month
             {HABITS[k].label}
           </div>
           <div className="mt-2 text-3xl font-semibold" style={{ color: HABITS[k].color }}>
-            <CountUp value={md.habits[k].total} format={HABITS[k].unit === "pages" ? (n) => `${Math.round(n)}` : formatHours} />
+            <CountUp value={md.habits[k].total} format={HABITS[k].format} />
           </div>
           <div className="text-xs text-muted">{md.habits[k].studiedDays} dias</div>
         </Card>
@@ -346,6 +354,8 @@ function MonthStats({ md, card, today }: { md: Dashboard; card: Dashboard["month
 }
 
 function MonthCharts({ md, monthKey, today }: { md: Dashboard; monthKey: string; today: string }) {
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
   const { openDay } = useOverlays();
   const byDate = new Map(md.days.map((d) => [d.date, d]));
   const n = Number(monthEnd(monthKey).slice(8));
@@ -393,35 +403,10 @@ function MonthCharts({ md, monthKey, today }: { md: Dashboard; monthKey: string;
           </div>
         </Card>
         <Card className="lg:col-span-3" delay={0.06}>
-          <div className="mb-1 font-medium">Horas por dia</div>
-          <div className="mb-5">
-            <Legend items={[{ color: "var(--prog)", label: "programação" }, { color: "var(--eng)", label: "inglês" }]} />
-          </div>
-          <BarChart
-            labels={isos.map((iso) => String(Number(iso.slice(8))))}
-            series={[
-              { key: "p", label: "programação", color: "var(--prog)", values: isos.map((iso) => val(iso, "programming")) },
-              { key: "e", label: "inglês", color: "var(--eng)", values: isos.map((iso) => val(iso, "english")) },
-            ]}
-            format={(v) => formatDuration(Math.round(v))}
-            tickFormat={tickHours}
-            unit={60}
-            values="peak"
-            labelEvery={5}
-            gapPct={1.2}
-            height={200}
-          />
-          <div className="mt-8 mb-5 font-medium">Páginas por dia</div>
-          <BarChart
-            labels={isos.map((iso) => String(Number(iso.slice(8))))}
-            series={[{ key: "r", label: "páginas", color: "var(--read)", values: isos.map((iso) => val(iso, "reading")) }]}
-            format={(v) => `${Math.round(v)}`}
-            unit={2}
-            values="peak"
-            labelEvery={5}
-            gapPct={1.2}
-            height={120}
-          />
+          {KEYS.map(k => <div key={k} className="mb-8 last:mb-0">
+            <div className="mb-5 font-medium">{HABITS[k].label} por dia</div>
+            <BarChart labels={isos.map(iso => String(Number(iso.slice(8))))} series={[{ key: k, label: HABITS[k].label, color: HABITS[k].color, values: isos.map(iso => val(iso, k)) }]} format={HABITS[k].format} tickFormat={HABITS[k].format} unit={HABITS[k].unit === "min" ? 60 : 1} values="peak" labelEvery={5} gapPct={1.2} height={180} />
+          </div>)}
         </Card>
       </div>
       <Reveal className="mt-4">
@@ -435,9 +420,7 @@ function MonthCharts({ md, monthKey, today }: { md: Dashboard; monthKey: string;
                 <span className="w-10 text-lg font-semibold tabular-nums">{d.date.slice(8)}</span>
                 <span className="flex flex-wrap gap-x-3 text-xs text-muted">
                   {d.dayNumber != null && <span>Day {d.dayNumber}</span>}
-                  {d.prog ? <span className="text-prog">● {formatDuration(d.prog)}</span> : null}
-                  {d.eng ? <span className="text-eng">● {formatDuration(d.eng)}</span> : null}
-                  {d.pages ? <span className="text-read">● {d.pages} pág.</span> : null}
+                  {KEYS.filter(k => habitAmount(d, k) > 0).map(k => <span key={k} style={{ color: HABITS[k].color }}>● {HABITS[k].label}: {HABITS[k].format(habitAmount(d, k))}</span>)}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-sm">{(d.learned || d.study || d.notes).split("\n")[0]}</span>
                 <span className="text-muted transition group-hover:translate-x-1">→</span>
@@ -453,16 +436,13 @@ function MonthCharts({ md, monthKey, today }: { md: Dashboard; monthKey: string;
 /* ------------------------------------------- métricas do passado */
 
 function PastMetrics({ monthKey, today, days, summary }: { monthKey: string; today: string; days: DayLite[]; summary: SummaryLite | null }) {
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
   const [mode, setMode] = useState<"day" | "month">(days.length ? "day" : "month");
   const [dayState, dayAction, dayPending] = useActionState<NewDayState, FormData>(createDay, null);
   const [monthState, monthAction, monthPending] = useActionState<NewDayState, FormData>(createMonthSummary, null);
   const isCurrent = monthKey === today.slice(0, 7);
   const end = monthEnd(monthKey) < today ? monthEnd(monthKey) : today;
-  const logged = {
-    prog: days.reduce((a, d) => a + (d.prog ?? 0), 0),
-    eng: days.reduce((a, d) => a + (d.eng ?? 0), 0),
-    pages: days.reduce((a, d) => a + (d.pages ?? 0), 0),
-  };
   const modes = [
     { k: "day" as const, label: "Um dia específico" },
     { k: "month" as const, label: "Total do mês inteiro" },
@@ -503,7 +483,7 @@ function PastMetrics({ monthKey, today, days, summary }: { monthKey: string; tod
                     <b>{monthName(monthKey)}</b> já tem um resumo mensal:
                   </p>
                   <p className="text-muted">
-                    {formatDuration(summary.prog ?? 0)} de programação · {formatDuration(summary.eng ?? 0)} de inglês · {summary.pages ?? 0} páginas
+                    {KEYS.map(k => `${HABITS[k].label}: ${HABITS[k].format(habitAmount(summary, k))}`).join(" · ")}
                   </p>
                   <p className="font-mono text-xs text-faint">{summary.file}</p>
                   <p className="text-xs text-muted">Para corrigir, edite esse arquivo direto (o app nunca sobrescreve).</p>
@@ -515,24 +495,10 @@ function PastMetrics({ monthKey, today, days, summary }: { monthKey: string; tod
                   <p className="text-sm text-muted">
                     Total de <b className="text-foreground capitalize">{monthName(monthKey)}</b>. Vale como o total do mês inteiro:
                     {days.length
-                      ? ` os ${days.length} dias já registrados (${formatDuration(logged.prog)} de código, ${formatDuration(logged.eng)} de inglês, ${logged.pages} pág.) fazem parte dele, então só a diferença entra como “sem dia definido”.`
+                      ? ` os ${days.length} dias já registrados (${KEYS.map(k => `${HABITS[k].label}: ${HABITS[k].format(days.reduce((sum, d) => sum + habitAmount(d, k), 0))}`).join(", ")}) fazem parte dele, então só a diferença entra como “sem dia definido”.`
                       : " como não há dias registrados, tudo entra como “sem dia definido”."}
                   </p>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { name: "programming", label: "Programação", ph: "20h", color: "var(--prog)" },
-                      { name: "english", label: "Inglês", ph: "6h30", color: "var(--eng)" },
-                      { name: "pages", label: "Páginas", ph: "120", color: "var(--read)" },
-                    ].map((f) => (
-                      <label key={f.name} className="block space-y-1.5">
-                        <span className="flex items-center gap-1.5 text-sm text-muted">
-                          <span className="h-2 w-2 rounded-full" style={{ background: f.color }} />
-                          {f.label}
-                        </span>
-                        <input name={f.name} placeholder={f.ph} inputMode={f.name === "pages" ? "numeric" : "text"} className={input} />
-                      </label>
-                    ))}
-                  </div>
+                  <HabitFields monthly />
                   <label className="block space-y-1.5">
                     <span className="text-sm text-muted">Notas (opcional)</span>
                     <textarea name="notes" rows={3} className={input} placeholder="Ex.: estudei pelo curso X, sem anotar os dias" />
@@ -568,14 +534,17 @@ function Result({ state }: { state: NewDayState }) {
 /* ================================================================= ANO */
 
 export function YearTab({ days, extras, today }: { days: DayLite[]; extras: MonthExtra[]; today: string }) {
-  const years = [...new Set([...days.map((d) => d.date.slice(0, 4)), ...extras.map((e) => e.key.slice(0, 4))])].sort().reverse();
+  const HABITS = useHabits();
+  const KEYS = Object.keys(HABITS);
+  const preferences = usePreferences();
+  const years = [...new Set([...days.map((d) => d.date.slice(0, 4)), ...extras.map((e) => e.key.slice(0, 4)), today.slice(0, 4)])].sort().reverse();
   const [year, setYear] = useState(years.includes(today.slice(0, 4)) ? today.slice(0, 4) : years[0]);
   const yd = useMemo(
-    () => buildDashboard(days.filter((d) => d.date.startsWith(year)), extras.filter((e) => e.key.startsWith(year)), today),
-    [days, extras, year, today],
+    () => buildDashboard(days.filter((d) => d.date.startsWith(year)), extras.filter((e) => e.key.startsWith(year)), today, preferences),
+    [days, extras, year, today, preferences],
   );
   const end = `${year}-12-31` < today ? `${year}-12-31` : today;
-  const bestMonth = yd.months.length ? yd.months.reduce((b, m) => (m.prog + m.eng > b.prog + b.eng ? m : b)) : null;
+  const bestMonth = yd.months.length ? yd.months.reduce((b, m) => (m.minutes > b.minutes ? m : b)) : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 md:px-8">
@@ -594,14 +563,12 @@ export function YearTab({ days, extras, today }: { days: DayLite[]; extras: Mont
             <span className="text-muted">em números</span>
           </span>
         }
-        subtitle={bestMonth ? <>Melhor mês do ano: <b className="text-foreground capitalize">{monthName(bestMonth.key)}</b> ({formatHours(bestMonth.prog + bestMonth.eng)}).</> : undefined}
+        subtitle={bestMonth ? <>Melhor mês do ano: <b className="text-foreground capitalize">{monthName(bestMonth.key)}</b> ({formatHours(bestMonth.minutes)}).</> : undefined}
       >
         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
           {[
             { l: "horas de estudo", v: yd.overall.totalMinutes, f: formatHours, c: "var(--accent)" },
-            { l: "programação", v: yd.habits.programming.total, f: formatHours, c: "var(--prog)" },
-            { l: "inglês", v: yd.habits.english.total, f: formatHours, c: "var(--eng)" },
-            { l: "páginas", v: yd.habits.reading.total, f: (n: number) => `${Math.round(n)}`, c: "var(--read)" },
+            ...KEYS.map(k => ({ l: HABITS[k].label, v: yd.habits[k].total, f: HABITS[k].format, c: HABITS[k].color })),
             { l: "dias estudados", v: yd.overall.studiedDays, f: (n: number) => `${Math.round(n)}`, c: "var(--accent)" },
           ].map((s, i) => (
             <Card key={s.l} delay={i * 0.05}>

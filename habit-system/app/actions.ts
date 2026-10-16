@@ -4,6 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { formatDuration, loadLogs, monthDir, parseDuration } from "@/lib/logs";
+import { readPreferences, writePreferences } from "@/lib/preferences-store";
+import { activeHabits, fieldName, validatePreferences, type Preferences } from "@/lib/preferences";
 import { localToday } from "@/lib/stats";
 
 export type NewDayState = { ok: boolean; message: string; file?: string } | null;
@@ -25,21 +27,6 @@ const cell = (s: string, width: number) => {
 
 const row = (label: string, today: string, month: string) => `|${cell(label, 17)}|${cell(today, 17)}|${cell(month, 23)}|`;
 
-type Parsed = { min: number | null; error: boolean };
-function readDuration(formData: FormData, name: string): Parsed {
-  const raw = String(formData.get(name) ?? "").trim();
-  if (!raw) return { min: null, error: false };
-  const min = parseDuration(raw);
-  return { min, error: min == null };
-}
-
-function readPages(formData: FormData): { pages: number | null; error: boolean } {
-  const raw = String(formData.get("pages") ?? "").trim();
-  if (!raw) return { pages: null, error: false };
-  const pages = parseInt(raw, 10);
-  return { pages, error: Number.isNaN(pages) || pages < 0 };
-}
-
 // "wx": falha se o arquivo já existir — nunca sobrescreve nada
 function writeNew(file: string, content: string): boolean {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -52,6 +39,12 @@ function writeNew(file: string, content: string): boolean {
 }
 
 export async function createDay(_prev: NewDayState, formData: FormData): Promise<NewDayState> {
+  const preferences = readPreferences().preferences;
+  let values: Record<string, number>;
+  try { values = readHabitValues(formData, preferences); }
+  catch (error) { return { ok: false, message: (error as Error).message }; }
+  const custom = Object.fromEntries(Object.entries(values).filter(([id]) => id.startsWith("custom-")));
+
   const date = String(formData.get("date") ?? "");
   const match = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) return { ok: false, message: "Data inválida." };
@@ -59,11 +52,9 @@ export async function createDay(_prev: NewDayState, formData: FormData): Promise
   const today = localToday();
   if (date > today) return { ok: false, message: "Não dá para registrar um dia que ainda não chegou." };
 
-  const prog = readDuration(formData, "programming");
-  const eng = readDuration(formData, "english");
-  if (prog.error || eng.error) return { ok: false, message: "Não entendi o tempo. Use algo como 2h30, 45min ou 1hr." };
-  const { pages, error: pagesError } = readPages(formData);
-  if (pagesError) return { ok: false, message: "Páginas inválidas." };
+  const prog = values.programming ?? null;
+  const eng = values.english ?? null;
+  const pages = values.reading ?? null;
   const learned = String(formData.get("learned") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
@@ -82,12 +73,13 @@ export async function createDay(_prev: NewDayState, formData: FormData): Promise
 
   // Totais do mês = dias já registrados no mês (antes desta data) + hoje
   const monthDays = logs.days.filter((day) => day.date.startsWith(`${y}-${m}`) && day.date < date);
-  const monthProg = monthDays.reduce((a, day) => a + (day.programmingMin ?? 0), 0) + (prog.min ?? 0);
-  const monthEng = monthDays.reduce((a, day) => a + (day.englishMin ?? 0), 0) + (eng.min ?? 0);
+  const monthProg = monthDays.reduce((a, day) => a + (day.programmingMin ?? 0), 0) + (prog ?? 0);
+  const monthEng = monthDays.reduce((a, day) => a + (day.englishMin ?? 0), 0) + (eng ?? 0);
   const monthPages = monthDays.reduce((a, day) => a + (day.pagesRead ?? 0), 0) + (pages ?? 0);
-  const total = (prog.min ?? 0) + (eng.min ?? 0);
+  const total = activeHabits(preferences).filter(h => h.unit === "min").reduce((sum, h) => sum + (values[h.id] ?? 0), 0);
 
   const content = [
+    `<!-- habits-v1: ${JSON.stringify(custom)} -->`,
     "```md",
     dayNumber != null ? `# Day ${dayNumber} — ${d}/${m}/${y}` : `# Day — ${d}/${m}/${y} (retroactive log)`,
     "",
@@ -101,9 +93,12 @@ export async function createDay(_prev: NewDayState, formData: FormData): Promise
     "-------------------------------------------------------------",
     "|      Topic      |      Today      |      Month Total      |",
     "|-----------------|----------------:|----------------------:|",
-    row("Programming", mdDuration(prog.min), mdDuration(monthProg)),
-    row("English", mdDuration(eng.min), mdDuration(monthEng)),
-    row("Read", pages ? String(pages) : "", monthPages ? `${monthPages} pages` : ""),
+    ...activeHabits(preferences).map(h => {
+      const value = values[h.id] ?? 0;
+      const monthValue = h.id === "programming" ? monthProg : h.id === "english" ? monthEng : h.id === "reading" ? monthPages : monthDays.reduce((sum, day) => sum + (day.custom?.[h.id] ?? 0), 0) + value;
+      const label = h.id === "programming" ? "Programming" : h.id === "english" ? "English" : h.id === "reading" ? "Read" : `Custom: ${h.label.replace(/[|\r\n]/g, " ")}`;
+      return row(label, h.unit === "min" ? mdDuration(value) : String(value), h.unit === "min" ? mdDuration(monthValue) : String(monthValue));
+    }),
     "-------------------------------------------------------------",
     "",
     `**Total study time today: *${mdDuration(total) || "0min"}*`,
@@ -132,6 +127,12 @@ export async function createDay(_prev: NewDayState, formData: FormData): Promise
 }
 
 export async function createMonthSummary(_prev: NewDayState, formData: FormData): Promise<NewDayState> {
+  const preferences = readPreferences().preferences;
+  let values: Record<string, number>;
+  try { values = readHabitValues(formData, preferences); }
+  catch (error) { return { ok: false, message: (error as Error).message }; }
+  const custom = Object.fromEntries(Object.entries(values).filter(([id]) => id.startsWith("custom-")));
+
   const month = String(formData.get("month") ?? "");
   const match = month.match(/^(\d{4})-(\d{2})$/);
   if (!match) return { ok: false, message: "Mês inválido." };
@@ -139,13 +140,8 @@ export async function createMonthSummary(_prev: NewDayState, formData: FormData)
   const today = localToday();
   if (month > today.slice(0, 7)) return { ok: false, message: "Esse mês ainda não chegou." };
 
-  const prog = readDuration(formData, "programming");
-  const eng = readDuration(formData, "english");
-  if (prog.error || eng.error) return { ok: false, message: "Não entendi o tempo. Use algo como 20h, 12h30 ou 45min." };
-  const { pages, error: pagesError } = readPages(formData);
-  if (pagesError) return { ok: false, message: "Páginas inválidas." };
-  if (prog.min == null && eng.min == null && pages == null) {
-    return { ok: false, message: "Preencha pelo menos um total (programação, inglês ou páginas)." };
+  if (!Object.keys(values).length) {
+    return { ok: false, message: "Preencha pelo menos um total dos hábitos selecionados." };
   }
   const notes = String(formData.get("notes") ?? "").trim();
 
@@ -156,6 +152,7 @@ export async function createMonthSummary(_prev: NewDayState, formData: FormData)
   }
 
   const content = [
+    `<!-- habits-v1: ${JSON.stringify(custom)} -->`,
     "```md",
     `# Month Summary — ${m}/${y}`,
     "",
@@ -165,9 +162,11 @@ export async function createMonthSummary(_prev: NewDayState, formData: FormData)
     "-------------------------------------------------------------",
     "|      Topic      |      Month Total      |",
     "|-----------------|----------------------:|",
-    `|${cell("Programming", 17)}|${cell(mdDuration(prog.min), 23)}|`,
-    `|${cell("English", 17)}|${cell(mdDuration(eng.min), 23)}|`,
-    `|${cell("Read", 17)}|${cell(pages ? `${pages} pages` : "", 23)}|`,
+    ...activeHabits(preferences).map(h => {
+      const label = h.id === "programming" ? "Programming" : h.id === "english" ? "English" : h.id === "reading" ? "Read" : `Custom: ${h.label.replace(/[|\r\n]/g, " ")}`;
+      const value = values[h.id] ?? 0;
+      return `|${cell(label, 17)}|${cell(h.unit === "min" ? mdDuration(value) : String(value), 23)}|`;
+    }),
     "-------------------------------------------------------------",
     "",
     "## 💭 Notes",
@@ -184,4 +183,34 @@ export async function createMonthSummary(_prev: NewDayState, formData: FormData)
 
   revalidatePath("/", "layout");
   return { ok: true, message: `Resumo de ${m}/${y} salvo.`, file: path.relative(logs.root, file) };
+}
+
+export async function savePreferences(_prev: NewDayState, formData: FormData): Promise<NewDayState> {
+  try {
+    const next = validatePreferences(JSON.parse(String(formData.get("preferences") ?? "")));
+    const current = readPreferences().preferences;
+    // Never discard IDs or change units once they may have recorded values.
+    for (const old of current.habits) {
+      const updated = next.habits.find(h => h.id === old.id);
+      if (!updated) next.habits.push({ ...old, enabled: false });
+      else if (updated.unit !== old.unit) throw new Error("A unidade de um hábito existente não pode ser alterada. Crie outro hábito.");
+    }
+    writePreferences(next);
+    revalidatePath("/", "layout");
+    return { ok: true, message: "Preferências salvas." };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "Não foi possível salvar. Tente novamente." };
+  }
+}
+
+function readHabitValues(formData: FormData, preferences: Preferences) {
+  const values: Record<string, number> = {};
+  for (const h of activeHabits(preferences)) {
+    const raw = String(formData.get(fieldName(h.id)) ?? "").trim();
+    if (!raw) continue;
+    const value = h.unit === "min" ? parseDuration(raw) : Number(raw);
+    if (value == null || !Number.isFinite(value) || value < 0 || value > 10000000 || (h.unit !== "min" && !Number.isInteger(value)) || raw.startsWith("-")) throw new Error(`Valor inválido para ${h.label}. Use ${h.unit === "min" ? "2h30 ou 45min" : "um número inteiro maior ou igual a zero"}.`);
+    values[h.id] = value;
+  }
+  return values;
 }

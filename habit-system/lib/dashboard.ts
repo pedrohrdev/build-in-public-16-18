@@ -1,10 +1,12 @@
 // Cálculos do painel. Código puro (sem node:fs): roda no servidor e no navegador,
 // para as abas Mês e Ano poderem recalcular tudo para o período escolhido.
+import { DEFAULT_PREFERENCES, activeHabits, habitAmount, type Preferences } from "./preferences.ts";
 import { addDays, monthEnd, monthLabel } from "./format.ts";
 
-export type HabitKey = "programming" | "english" | "reading";
+export type HabitKey = string;
 
 export type DayLite = {
+  custom?: Record<string, number>;
   date: string;
   dayNumber: number | null;
   prog: number | null;
@@ -24,6 +26,7 @@ export type DayLite = {
 
 // Resumo mensal escrito à mão (arquivo month-summary-MM-AAAA.md)
 export type SummaryLite = {
+  custom?: Record<string, number>;
   key: string;
   prog: number | null;
   eng: number | null;
@@ -35,7 +38,7 @@ export type SummaryLite = {
 
 // O resumo vale como TOTAL do mês: só a parte que passa da soma dos dias registrados
 // entra como "sem dia definido".
-export type MonthExtra = { key: string; prog: number; eng: number; pages: number; summary: SummaryLite };
+export type MonthExtra = { custom?: Record<string, number>; key: string; prog: number; eng: number; pages: number; summary: SummaryLite };
 
 export type Report = {
   root: string;
@@ -62,6 +65,8 @@ export type HabitStats = {
 export type MonthCard = {
   key: string;
   label: string;
+  values: Record<string, number>;
+  minutes: number;
   prog: number;
   eng: number;
   pages: number;
@@ -88,8 +93,8 @@ export type Dashboard = ReturnType<typeof buildDashboard>;
 
 const WEEKDAYS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
 
-export const habitValue = (d: DayLite, k: HabitKey) => (k === "programming" ? d.prog : k === "english" ? d.eng : d.pages) ?? 0;
-const extraValue = (e: MonthExtra, k: HabitKey) => (k === "programming" ? e.prog : k === "english" ? e.eng : e.pages);
+export const habitValue = habitAmount;
+const extraValue = (e: MonthExtra, k: HabitKey) => habitAmount(e, k);
 
 export function computeExtras(days: DayLite[], summaries: SummaryLite[]): MonthExtra[] {
   return summaries.map((s) => {
@@ -97,6 +102,7 @@ export function computeExtras(days: DayLite[], summaries: SummaryLite[]): MonthE
     const sum = (f: (d: DayLite) => number | null) => md.reduce((a, d) => a + (f(d) ?? 0), 0);
     return {
       key: s.key,
+      custom: Object.fromEntries(Object.entries(s.custom ?? {}).map(([id, total]) => [id, Math.max(0, total - md.reduce((sum, d) => sum + (d.custom?.[id] ?? 0), 0))])),
       prog: Math.max(0, (s.prog ?? 0) - sum((d) => d.prog)),
       eng: Math.max(0, (s.eng ?? 0) - sum((d) => d.eng)),
       pages: Math.max(0, (s.pages ?? 0) - sum((d) => d.pages)),
@@ -129,7 +135,16 @@ function streaks(first: string | undefined, has: (iso: string) => boolean, today
   return { current, best, bestStart, bestEnd };
 }
 
-export function buildDashboard(days: DayLite[], extras: MonthExtra[], today: string) {
+export function buildDashboard(sourceDays: DayLite[], extras: MonthExtra[], today: string, preferences: Preferences = DEFAULT_PREFERENCES) {
+  const selected = activeHabits(preferences);
+  const keys = selected.map(h => h.id);
+  const timed = selected.filter(h => h.unit === "min");
+  const days = sourceDays.map(d => {
+    const measured = timed.reduce((sum, h) => sum + habitValue(d, h.id), 0);
+    const legacyTotal = !Object.keys(d.custom ?? {}).length && ["programming", "english", "reading"].every(k => keys.includes(k));
+    const minutes = legacyTotal ? Math.max(measured, d.minutes) : measured;
+    return { ...d, minutes, studied: minutes > 0 || keys.some(k => habitValue(d, k) > 0) };
+  });
   const byDate = new Map(days.map((d) => [d.date, d]));
   const dates = days.map((d) => d.date);
   const monthKeys = [...new Set([...dates.map((d) => d.slice(0, 7)), ...extras.map((e) => e.key)])].sort();
@@ -139,18 +154,18 @@ export function buildDashboard(days: DayLite[], extras: MonthExtra[], today: str
   const evMap = new Map<string, Ev>();
   const push = (date: string, k: HabitKey, v: number) => {
     const ev = evMap.get(date) ?? { date, v: { programming: 0, english: 0, reading: 0 } };
-    ev.v[k] += v;
+    ev.v[k] = (ev.v[k] ?? 0) + v;
     evMap.set(date, ev);
   };
-  for (const d of days) for (const k of ["programming", "english", "reading"] as HabitKey[]) push(d.date, k, habitValue(d, k));
+  for (const d of days) for (const k of keys) push(d.date, k, habitValue(d, k));
   for (const e of extras) {
     const at = monthEnd(e.key) < today ? monthEnd(e.key) : today;
-    for (const k of ["programming", "english", "reading"] as HabitKey[]) push(at, k, extraValue(e, k));
+    for (const k of keys) push(at, k, extraValue(e, k));
   }
   const timeline = [...evMap.values()].sort((a, b) => a.date.localeCompare(b.date));
   const cumulativeOf = (k: HabitKey) => {
     let acc = 0;
-    return timeline.map((ev) => ({ date: ev.date, value: (acc += ev.v[k]) }));
+    return timeline.map((ev) => ({ date: ev.date, value: (acc += ev.v[k] ?? 0) }));
   };
 
   const habit = (k: HabitKey): HabitStats => {
@@ -185,7 +200,7 @@ export function buildDashboard(days: DayLite[], extras: MonthExtra[], today: str
     };
   };
 
-  const habits = { programming: habit("programming"), english: habit("english"), reading: habit("reading") };
+  const habits: Record<string, HabitStats> = Object.fromEntries([...new Set([...keys, "programming", "english", "reading"])].map(k => [k, habit(k)]));
   const overall = streaks(dates[0], (iso) => !!byDate.get(iso)?.studied, today);
   const lastDate = dates[dates.length - 1] > today ? dates[dates.length - 1] : today;
   const span = dates.length ? Math.round((Date.parse(lastDate) - Date.parse(dates[0])) / 86400000) + 1 : 0;
@@ -199,6 +214,8 @@ export function buildDashboard(days: DayLite[], extras: MonthExtra[], today: str
     const best = md.reduce<DayLite | null>((b, d) => (!b || d.minutes > b.minutes ? d : b), null);
     return {
       key,
+      values: Object.fromEntries(keys.map(k => [k, habits[k].monthly[i].value])),
+      minutes: timed.reduce((sum, h) => sum + habits[h.id].monthly[i].value, 0),
       label: monthLabel(key),
       prog,
       eng: habits.english.monthly[i].value,
@@ -219,6 +236,8 @@ export function buildDashboard(days: DayLite[], extras: MonthExtra[], today: str
     const eng = list.reduce((a, d) => a + (d.eng ?? 0), 0);
     return {
       label,
+      values: Object.fromEntries(keys.map(k => [k, list.length ? Math.round(list.reduce((sum, d) => sum + habitValue(d, k), 0) / list.length) : 0])),
+      minutes: list.length ? Math.round(list.reduce((sum, d) => sum + d.minutes, 0) / list.length) : 0,
       count: list.length,
       prog: list.length ? Math.round(prog / list.length) : 0,
       eng: list.length ? Math.round(eng / list.length) : 0,
@@ -283,12 +302,15 @@ export function buildDashboard(days: DayLite[], extras: MonthExtra[], today: str
       studiedDays: days.filter((d) => d.studied).length,
       loggedDays: days.length,
       span,
-      totalMinutes: habits.programming.total + habits.english.total,
+      totalMinutes: timed.reduce((sum, h) => sum + habits[h.id].total, 0),
       maxDayMinutes: Math.max(0, ...days.map((d) => d.minutes)),
     },
     habits,
     months,
     weekday,
-    achievements,
+    preferences,
+    achievements: achievements.filter(a => !/^[per]\d/.test(a.id) || keys.includes(a.id.startsWith("p") ? "programming" : a.id.startsWith("e") ? "english" : "reading")).concat(
+      selected.filter(h => h.id.startsWith("custom-")).map(h => ach(`${h.id}-first`, "✦", `Primeiro passo: ${h.label}`, `Primeiro registro de ${h.label}`, habits[h.id].cumulative, 1)),
+    ),
   };
 }
