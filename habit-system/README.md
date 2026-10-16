@@ -12,6 +12,33 @@ npm install
 npm run dev        # http://localhost:3618
 ```
 
+## Usar no Windows com seus próprios dados
+
+Instale o Node.js LTS e o Git. No PowerShell ou Prompt de Comando:
+
+```bash
+git clone https://github.com/pedrohrdev/build-in-public-16-18.git
+cd build-in-public-16-18/habit-system
+npm.cmd install
+npm.cmd run setup:windows
+```
+
+Informe seu usuário do GitHub, sem `@`. O instalador cria `.env.local` (ignorado
+pelo Git), configura seus registros em `%LOCALAPPDATA%\Habitos\registros` e cria
+**Meus habitos** na Área de Trabalho, com o ícone do sistema. O painel começa sem
+os registros do autor. Os registros públicos do autor continuam nos arquivos do
+clone, mas a configuração pessoal faz o painel ler sua pasta própria.
+
+Clique no atalho para iniciar o servidor e abrir o navegador padrão. Deixe a
+janela do servidor aberta enquanto usa o painel; feche-a para parar. Não é
+necessário instalar o Chrome nem o GitHub CLI. Sem token, os commits consultados
+são públicos. O servidor aberto pelo atalho aceita conexões somente deste computador.
+
+Se mover o repo de pasta, execute `npm.cmd run setup:windows` novamente para
+atualizar o atalho. Configurações existentes em `.env.local` são preservadas:
+confira `LOGS_ROOT` e `GITHUB_USER` se já tinha configurado o app. Os registros
+pessoais ficam fora do repo; mantenha uma cópia de segurança dessa pasta.
+
 ## Abas
 
 A barra no topo troca de aba (a aba fica no endereço, ex.: `/#mes`, então recarregar e o "voltar" funcionam):

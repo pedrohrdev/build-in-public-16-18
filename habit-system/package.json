@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "setup:windows": "node scripts/setup-windows.mjs",
     "dev": "next dev -p 3618",
     "build": "next build",
     "start": "next start -p 3618",
